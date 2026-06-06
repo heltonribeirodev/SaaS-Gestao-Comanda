@@ -57,12 +57,10 @@ document.addEventListener('DOMContentLoaded', () => {
 const botoesFiltro = document.querySelectorAll('.btn-filtro');
 const listaComandas = document.querySelectorAll('.cartao-comanda');
 
-// Função isolada para processar a exibição
 function aplicarFiltro(filtro) {
     listaComandas.forEach(comanda => {
         const statusComanda = comanda.getAttribute('data-status');
 
-        // Agora verifica apenas se o filtro do botão bate exatamente com o status do cartão
         if (filtro === statusComanda) {
             comanda.style.display = 'block'; // Nota: Mude para 'flex' se usar flexbox nos cartões
         } else {
@@ -71,7 +69,6 @@ function aplicarFiltro(filtro) {
     });
 }
 
-// Evento de clique para alternar as abas
 botoesFiltro.forEach(botao => {
     botao.addEventListener('click', () => {
         botoesFiltro.forEach(b => b.classList.remove('active'));
@@ -82,9 +79,168 @@ botoesFiltro.forEach(botao => {
     });
 });
 
-// Inicialização de segurança: 
-// Executa o filtro logo que a página carrega, baseando-se no <li> que já tem a classe 'active'
 const botaoAtivoInicial = document.querySelector('.btn-filtro.active');
 if (botaoAtivoInicial) {
     aplicarFiltro(botaoAtivoInicial.getAttribute('data-filter'));
 }
+
+    // FUNÇÃO PARA ABRIR E FECHAR A TELA SOBREPOSTA DE NOVA COMANDA
+    function abrirModal() {
+    document.getElementById('modal-comanda').style.display = 'flex';
+}
+
+function fecharModal() {
+    document.getElementById('modal-comanda').style.display = 'none';
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    // Ajuste o seletor se o seu botão for diferente
+    const btnNovaComanda = document.querySelector('.btn-nova-comanda');
+    
+    if (btnNovaComanda) {
+        btnNovaComanda.addEventListener('click', (e) => {
+            e.preventDefault();
+            abrirModal();
+        });
+    }
+});
+
+function proximoPasso() {
+    const inputNome = document.getElementById('cliente');
+    const erroDiv = document.getElementById('erro-cliente');
+
+    // Validação: trim() remove espaços em branco antes/depois
+    if (inputNome.value.trim() === "") {
+        erroDiv.innerText = "Por favor, preencha o nome do cliente.";
+        erroDiv.style.display = "block"; // Mostra o balão
+        inputNome.focus(); // Coloca o cursor no campo
+        return; // Interrompe a função aqui
+    }
+
+    // Se passou na validação, esconde o erro e muda a tela
+    erroDiv.style.display = "none";
+    document.getElementById('step-1').style.display = 'none';
+    document.getElementById('step-2').style.display = 'block';
+}
+
+function voltarPasso() {
+    // Esconde qualquer erro remanescente ao voltar
+    document.getElementById('erro-cliente').style.display = 'none';
+    document.getElementById('step-2').style.display = 'none';
+    document.getElementById('step-1').style.display = 'block';
+}
+
+function fecharModal() {
+    // Esconde o modal
+    document.getElementById('modal-comanda').style.display = 'none';
+    
+    // Reseta o estado para o passo 1
+    document.getElementById('step-1').style.display = 'block';
+    document.getElementById('step-2').style.display = 'none';
+    
+    // Esconde o balão de erro caso ele estivesse visível
+    document.getElementById('erro-cliente').style.display = 'none';
+    
+    // Reseta o formulário
+    document.getElementById('form-nova-comanda').reset();
+}
+
+// NOVO PRODUTO
+function abrirModalProduto() {
+    document.getElementById('modal-novo-produto').classList.add('visivel');
+}
+
+function fecharModalProduto() {
+    document.getElementById('modal-novo-produto').classList.remove('visivel');
+}
+
+
+document.addEventListener('DOMContentLoaded', () => {
+    const msgStatus = document.getElementById('msg-status');
+    
+    // Verifica se a URL tem o parâmetro 'status'
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.has('status')) {
+        msgStatus.style.display = 'block'; // Mostra a mensagem
+        
+        // Remove o parâmetro da URL para não mostrar a mensagem ao recarregar a página
+        window.history.replaceState({}, document.title, window.location.pathname);
+        
+        // Esconde após 3 segundos
+        setTimeout(() => {
+            msgStatus.style.display = 'none';
+        }, 3000);
+    }
+}); 
+
+
+document.addEventListener('DOMContentLoaded', () => {
+    const botoesFiltro = document.querySelectorAll('.btn-filtro');
+    const cardsProdutos = document.querySelectorAll('.card-produto');
+
+    botoesFiltro.forEach(botao => {
+        botao.addEventListener('click', () => {
+            // 1. Remove a classe 'active' de todos os botões e adiciona no clicado
+            botoesFiltro.forEach(b => b.classList.remove('active'));
+            botao.classList.add('active');
+
+            // 2. Pega a categoria selecionada
+            const categoriaSelecionada = botao.getAttribute('data-filter');
+
+            // 3. Filtra os cards
+            cardsProdutos.forEach(card => {
+                const categoriaCard = card.getAttribute('data-categoria');
+
+                if (categoriaSelecionada === 'todos' || categoriaCard === categoriaSelecionada) {
+                    card.style.display = 'block'; // Mostra o card
+                } else {
+                    card.style.display = 'none'; // Esconde o card
+                }
+            });
+        });
+    });
+});
+
+// Função de busca
+function realizarBusca() {
+    const termo = document.getElementById('buscar-produto').value.toLowerCase();
+    const cards = document.querySelectorAll('.card-produto');
+    const botoesFiltro = document.querySelectorAll('.btn-filtro');
+
+    // 1. Filtra os produtos
+    cards.forEach(card => {
+        const nomeProduto = card.querySelector('p strong').textContent.toLowerCase();
+        if (nomeProduto.includes(termo)) {
+            card.style.display = 'block';
+        } else {
+            card.style.display = 'none';
+        }
+    });
+
+    // 2. Atualiza a contagem de cada categoria
+    botoesFiltro.forEach(botao => {
+        const categoria = botao.getAttribute('data-filter');
+        
+        if (categoria === 'todos') {
+            const visiveis = Array.from(cards).filter(c => c.style.display !== 'none').length;
+            botao.innerHTML = `Todos (${visiveis})`;
+        } else {
+            // Conta apenas os cards visíveis que pertencem a esta categoria
+            const visiveis = Array.from(cards).filter(c => 
+                c.style.display !== 'none' && c.getAttribute('data-categoria') === categoria
+            ).length;
+            
+            // Atualiza o texto (mantendo o nome da categoria)
+            botao.innerHTML = `${categoria} (${visiveis})`;
+        }
+    });
+}
+
+// Vincula o evento 'input'
+document.getElementById('buscar-produto').addEventListener('input', realizarBusca);
+
+// O EVENTO 'input' detecta cada tecla digitada ou apagada
+document.getElementById('buscar-produto').addEventListener('input', realizarBusca);
+
+// Opcional: Manter o botão funcionando caso o usuário prefira clicar
+document.querySelector('.btn-pesquisar').addEventListener('click', realizarBusca);

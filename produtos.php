@@ -1,0 +1,111 @@
+<?php
+session_start();
+if (!isset($_SESSION['usuario_id'])) {
+    header("Location: index.html");
+    exit;
+}
+require_once 'api/conexao.php';
+
+// 1. Busca os produtos ordenados (Categoria A-Z, Nome A-Z)
+$stmt = $pdo->query("SELECT * FROM produtos ORDER BY categoria ASC, nome ASC");
+$produtos = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+// 2. Busca as categorias também ordenadas alfabeticamente
+$stmtCats = $pdo->query("SELECT categoria, COUNT(*) as total FROM produtos GROUP BY categoria ORDER BY categoria ASC");
+$categoriasComCount = $stmtCats->fetchAll(PDO::FETCH_ASSOC);
+
+$totalGeral = array_sum(array_column($categoriasComCount, 'total'));
+?>
+
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SaaS Gestão de Comandas - Produtos</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body class="home">
+    <header class="nav">
+        <img src="assets/logo.png" alt="Logo" class="logo-header">
+        <nav>
+            <ul>
+                <li><a href="home.php">Comandas</a></li>
+                <li><a href="produtos.php" class="select-nav">Produtos</a></li>
+                <li><a href="admin.php">Painel Administrativo</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <div id="msg-status" class="alert-box">
+        <?php if (isset($_GET['status'])): ?>
+            <?php if ($_GET['status'] == 'sucesso'): ?>
+                <p style="color: green;">Produto cadastrado com sucesso!</p>
+            <?php else: ?>
+                <p style="color: red;">Ocorreu um erro ao cadastrar. Tente novamente.</p>
+            <?php endif; ?>
+        <?php endif; ?>
+    </div>
+
+    <main class="conteudo">
+        <div class="title">
+            <h2>Produtos</h2>
+            <div class="grupo-acoes">
+                <div class="search-container">
+                    <input type="text" id="buscar-produto" placeholder="Buscar produtos...">
+                    <button class="btn-pesquisar" aria-label="Pesquisar"></button>
+                </div>
+                <a href="#" class="btn-secundario" onclick="abrirModalProduto()">+ Novo Produto</a>
+            </div>
+        </div>
+
+        <div class="status">
+            <ul>
+                <li class="btn-filtro active" data-filter="todos">
+                    Todos (<?= $totalGeral ?>)
+                </li>
+
+                <?php foreach ($categoriasComCount as $c): ?>
+                    <li class="btn-filtro" data-filter="<?= htmlspecialchars($c['categoria']) ?>">
+                        <?= htmlspecialchars($c['categoria']) ?> (<?= $c['total'] ?>)
+                    </li>
+                <?php endforeach; ?>
+            </ul>
+        </div>
+
+        <div class="grid-produtos">
+            <?php foreach ($produtos as $p): ?>
+                <div class="card-produto" data-categoria="<?= htmlspecialchars($p['categoria']) ?>">
+                    <p><strong><?= htmlspecialchars($p['nome']) ?></strong></p>
+                    <p>R$ <?= number_format($p['valor'], 2, ',', '.') ?></p>
+                    <div class="card-acoes">
+                        <button onclick="editarProduto(<?= $p['id'] ?>)" class="btn-sm">✏️</button>
+                        <button onclick="excluirProduto(<?= $p['id'] ?>)" class="btn-sm">🗑️</button>
+                    </div>
+                </div>
+            <?php endforeach; ?>
+        </div>
+    </main>
+
+    <div id="modal-novo-produto" class="modal-overlay">
+        <div class="modal-content">
+            <h2>Novo Produto</h2>
+            <form action="api/salvar_produto.php" method="POST" enctype="multipart/form-data">
+                <input type="text" name="nome" placeholder="Nome do Produto" required>
+                <input type="number" step="0.01" name="valor" placeholder="Valor" required>
+                <input type="text" name="categoria" placeholder="Categoria" required>
+
+                <div class="modal-actions">
+                    <button type="button" onclick="fecharModalProduto()">Cancelar</button>
+                    <button type="submit">Salvar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="js/script.js" defer></script>
+</body>
+
+</html>

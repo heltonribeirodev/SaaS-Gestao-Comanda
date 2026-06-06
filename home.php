@@ -48,7 +48,7 @@ if (!isset($_SESSION['usuario_id'])) {
                     <button class="btn-pesquisar" aria-label="Pesquisar"></button>
                 </div>
 
-                <a href="#n-comanda" class="btn-nova-comanda">
+                <a href="#n-comanda" class="btn-nova-comanda btn-secundario">
                     + Nova Comanda
                 </a>
             </div>
@@ -88,14 +88,29 @@ if (!isset($_SESSION['usuario_id'])) {
 
     <div id="modal-comanda" class="modal-overlay">
         <div class="modal-content">
-            <h2>Nova Comanda</h2>
             <form id="form-nova-comanda">
-                <input type="text" placeholder="Nome do Cliente" required>
-                <input type="number" placeholder="Número da Mesa" required>
-                <div class="modal-actions">
-                    <button type="button" onclick="fecharModal()">Cancelar</button>
-                    <button type="submit">Salvar Comanda</button>
+
+                <div id="step-1" class="new-comanda">
+                    <h2>Nova Comanda (1/2)</h2>
+
+                    <div id="erro-cliente" class="balao-erro" style="display: none;"></div>
+
+                    <input type="text" id="cliente" placeholder="Nome do Cliente">
+                    <div class="modal-actions">
+                        <button type="button" onclick="fecharModal()">Cancelar</button>
+                        <button type="button" onclick="proximoPasso()">Próximo</button>
+                    </div>
                 </div>
+
+                <div id="step-2" style="display: none;" class="new-comanda">
+                    <h2>Nova Comanda (2/2)</h2>
+
+                    <div class="modal-actions">
+                        <button type="button" onclick="voltarPasso()">Voltar</button>
+                        <button type="submit">Salvar Comanda</button>
+                    </div>
+                </div>
+
             </form>
         </div>
     </div>
