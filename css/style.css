@@ -373,24 +373,6 @@ body.home {
                     border-radius: 4px;
                     cursor: pointer;
                     font-size: 0.875rem;
-
-                    &:first-child {
-                        background-color: #e0e0e0;
-                        color: #333;
-
-                        &:hover {
-                            background-color: #d5d5d5;
-                        }
-                    }
-
-                    &:last-child {
-                        background-color: #3b82f6;
-                        color: white;
-
-                        &:hover {
-                            background-color: #2563eb;
-                        }
-                    }
                 }
             }
         }
@@ -399,17 +381,22 @@ body.home {
 
 /* Container que permite o scroll horizontal */
 .status {
-    overflow-x: auto;      /* Habilita a barra de rolagem apenas quando necessário */
-    white-space: nowrap;   /* Impede que os itens pulem de linha */
-    padding-bottom: 10px;  /* Espaço para a barra de rolagem */
+    overflow-x: auto;
+    /* Habilita a barra de rolagem apenas quando necessário */
+    white-space: nowrap;
+    /* Impede que os itens pulem de linha */
+    padding-bottom: 10px;
+    /* Espaço para a barra de rolagem */
     margin-bottom: 20px;
-    scrollbar-width: thin; /* Deixa a barra mais fina no Firefox */
+    scrollbar-width: thin;
+    /* Deixa a barra mais fina no Firefox */
 }
 
 /* Ajuste para o Chrome/Safari para a barra ficar discreta */
 .status::-webkit-scrollbar {
     height: 6px;
 }
+
 .status::-webkit-scrollbar-thumb {
     background-color: #ccc;
     border-radius: 4px;
@@ -417,25 +404,31 @@ body.home {
 
 /* Garante que a lista fique em uma linha só */
 .status ul {
-    display: inline-flex;  /* Faz o ul respeitar o tamanho do conteúdo */
+    display: inline-flex;
+    /* Faz o ul respeitar o tamanho do conteúdo */
     gap: 10px;
     list-style: none;
     padding: 0;
-    margin: 0;  
+    margin: 0;
 }
 
 /* Opcional: Garante que os botões não fiquem "esticados" */
 .btn-filtro {
-    flex-shrink: 0; /* Impede que os botões fiquem achatados */
+    flex-shrink: 0;
+    /* Impede que os botões fiquem achatados */
 }
 
 .produto-img {
-    width: 100%;       /* Ocupa a largura total do card */
-    aspect-ratio: 1/1; /* Garante que ela seja SEMPRE quadrada */
-    object-fit: cover; /* Ajusta a imagem sem distorcer */
+    width: 100%;
+    /* Ocupa a largura total do card */
+    aspect-ratio: 1/1;
+    /* Garante que ela seja SEMPRE quadrada */
+    object-fit: cover;
+    /* Ajusta a imagem sem distorcer */
     border-radius: 8px;
     margin-bottom: 10px;
-    background: #f0f0f0; /* Caso a imagem demore a carregar */
+    background: #f0f0f0;
+    /* Caso a imagem demore a carregar */
 }
 
 
@@ -443,8 +436,10 @@ body.home {
 .modal-overlay {
     display: none;
     position: fixed;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
     background: rgba(0, 0, 0, 0.5);
     justify-content: center;
     align-items: center;
@@ -488,17 +483,6 @@ body.home {
     color: white;
 }
 
-
-.alert-box {
-    display: none; /* Escondido por padrão */
-    padding: 15px;
-    margin: 20px 0;
-    border-radius: 8px;
-    background: #f9f9f9;
-    border: 1px solid #ccc;
-    text-align: center;
-}
-
 .grid-produtos {
     display: grid;
     /* Isso cria colunas que se ajustam automaticamente */
@@ -512,7 +496,122 @@ body.home {
     border: 1px solid #ddd;
     border-radius: 8px;
     padding: 15px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-    /* Garante que o card ocupe o espaço do grid */
-    display: block; 
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    transition: 0.5s;
+    display: block;
+
+    &:hover {
+        border: 1px solid #2563eb;
+        scale: 1.05;
+    }
+
+    & img {
+        width: 100%;           /* Ocupa a largura do card */
+    height: 120px;         /* Defina uma altura fixa que fique boa para você */
+    object-fit: contain;   /* 'contain' mantém a imagem inteira sem cortar, 'cover' preenche todo o espaço cortando as bordas */
+    display: block;
+    margin: 10px auto;
+    background-color: transparent; /* Opcional: fundo para imagens transparentes */
+    border-radius: 4px;
+    }
+}
+
+.btn-cancelar {
+    background-color: #6c757d;
+    /* Cinza */
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-right: 10px;
+}
+
+.btn-cancelar:hover {
+    background-color: #5a6268;
+}
+
+/* Container do Modal */
+.modal-content {
+    background: white;
+    padding: 30px;
+    border-radius: 12px;
+    width: 100%;
+    max-width: 400px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+}
+
+/* O Form como um bloco organizado */
+.modal-content form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    /* Espaço entre os campos */
+}
+
+/* Estilo para os inputs */
+.modal-content input[type="text"],
+.modal-content input[type="number"] {
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    width: 100%;
+    box-sizing: border-box;
+    /* Garante que o padding não quebre o tamanho */
+}
+
+/* Container de botões alinhado */
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+/* Botões com design moderno */
+.modal-actions button {
+    padding: 10px 20px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.modal-actions button[type="submit"] {
+    background-color: #007bff;
+    color: white;
+}
+
+.btn-cancelar {
+    background-color: #e0e0e0;
+    color: #333;
+}
+
+/* Botão Cancelar (Cinza claro) */
+/* Botão Cancelar (Cinza Padrão) */
+.btn-cancelar {
+    background-color: #e0e0e0;
+    color: #333;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: background-color 0.3s;
+}
+
+.btn-cancelar:hover {
+    background-color: #d0d0d0; /* Efeito hover leve */
+}
+
+/* Botão de Ação/Salvar (Azul Padrão) */
+.btn-acao {
+    background-color: #007bff; /* Azul vivo */
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: background-color 0.3s;
 }

@@ -39,16 +39,6 @@ $totalGeral = array_sum(array_column($categoriasComCount, 'total'));
         </nav>
     </header>
 
-    <div id="msg-status" class="alert-box">
-        <?php if (isset($_GET['status'])): ?>
-            <?php if ($_GET['status'] == 'sucesso'): ?>
-                <p style="color: green;">Produto cadastrado com sucesso!</p>
-            <?php else: ?>
-                <p style="color: red;">Ocorreu um erro ao cadastrar. Tente novamente.</p>
-            <?php endif; ?>
-        <?php endif; ?>
-    </div>
-
     <main class="conteudo">
         <div class="title">
             <h2>Produtos</h2>
@@ -79,10 +69,16 @@ $totalGeral = array_sum(array_column($categoriasComCount, 'total'));
             <?php foreach ($produtos as $p): ?>
                 <div class="card-produto" data-categoria="<?= htmlspecialchars($p['categoria']) ?>">
                     <p><strong><?= htmlspecialchars($p['nome']) ?></strong></p>
+
+                    <img src="/saas-gestao-comandas/<?= ltrim(htmlspecialchars($p['imagem']), '/') ?>" alt="Produto"
+                        style="max-width: 100px; display: block; margin: 10px auto;"
+                        onerror="this.src='/saas-gestao-comandas/assets/default.png';">
                     <p>R$ <?= number_format($p['valor'], 2, ',', '.') ?></p>
                     <div class="card-acoes">
-                        <button onclick="editarProduto(<?= $p['id'] ?>)" class="btn-sm">✏️</button>
-                        <button onclick="excluirProduto(<?= $p['id'] ?>)" class="btn-sm">🗑️</button>
+                        <div class="card-acoes">
+                            <button onclick="editarProduto(<?= $p['id'] ?>)" class="btn-sm">✏️</button>
+                            <button onclick="excluirProduto(<?= $p['id'] ?>)" class="btn-sm">🗑️</button>
+                        </div>
                     </div>
                 </div>
             <?php endforeach; ?>
@@ -93,15 +89,30 @@ $totalGeral = array_sum(array_column($categoriasComCount, 'total'));
         <div class="modal-content">
             <h2>Novo Produto</h2>
             <form action="api/salvar_produto.php" method="POST" enctype="multipart/form-data">
+                <input type="hidden" name="id" id="produto-id" value="">
+
                 <input type="text" name="nome" placeholder="Nome do Produto" required>
                 <input type="number" step="0.01" name="valor" placeholder="Valor" required>
                 <input type="text" name="categoria" placeholder="Categoria" required>
 
+                <label>Foto do Produto:</label>
+                <input type="file" name="imagem" accept="image/*">
+
                 <div class="modal-actions">
-                    <button type="button" onclick="fecharModalProduto()">Cancelar</button>
-                    <button type="submit">Salvar</button>
-                </div>
+                    <button type="button" class="btn-cancelar" onclick="fecharModalProduto()">Cancelar</button>
+                    <button type="submit" class="btn-acao">Salvar</button>
+                </div>  
             </form>
+        </div>
+    </div>
+
+    <div id="modal-confirmacao" class="modal-overlay" style="display:none;">
+        <div class="modal-content">
+            <p>Tem certeza que deseja excluir este produto?</p>
+            <div class="modal-actions">
+                <button onclick="fecharConfirmacao()">Cancelar</button>
+                <button id="btn-confirmar-exclusao" class="btn-perigo">Confirmar</button>
+            </div>
         </div>
     </div>
 

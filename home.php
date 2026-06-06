@@ -96,10 +96,10 @@ if (!isset($_SESSION['usuario_id'])) {
                     <div id="erro-cliente" class="balao-erro" style="display: none;"></div>
 
                     <input type="text" id="cliente" placeholder="Nome do Cliente">
-                    <div class="modal-actions">
-                        <button type="button" onclick="fecharModal()">Cancelar</button>
-                        <button type="button" onclick="proximoPasso()">Próximo</button>
-                    </div>
+<div class="modal-actions">
+    <button type="button" class="btn-cancelar" onclick="fecharModal()">Cancelar</button>
+    <button type="button" class="btn-acao" onclick="proximoPasso()">Próximo</button>
+</div>
                 </div>
 
                 <div id="step-2" style="display: none;" class="new-comanda">
