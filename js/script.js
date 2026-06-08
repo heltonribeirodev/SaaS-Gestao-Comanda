@@ -1,37 +1,36 @@
-document.addEventListener('DOMContentLoaded', () => {
-    const formLogin = document.getElementById('form-login');
+// ==========================================
+// CONFIGURAÇÃO GLOBAL
+// ==========================================
+let metodoPagamentoSelecionado = '';
 
+// ==========================================
+// INICIALIZAÇÃO E EVENTOS (Ao carregar a página)
+// ==========================================
+document.addEventListener('DOMContentLoaded', () => {
+
+    // --- LOGIN ---
+    const formLogin = document.getElementById('form-login');
     if (formLogin) {
         formLogin.addEventListener('submit', function (e) {
             e.preventDefault();
-
             const btn = document.getElementById('btn-entrar');
             btn.innerText = "Entrando...";
             btn.disabled = true;
 
-            const formData = new FormData(this);
-
-            fetch('api/login.php', {
-                method: 'POST',
-                body: formData
-            })
-                .then(response => {
-                    if (!response.ok) throw new Error("Erro na rede: " + response.status);
-                    return response.json();
+            fetch('api/login.php', { method: 'POST', body: new FormData(this) })
+                .then(res => {
+                    if (!res.ok) throw new Error("Erro na rede: " + res.status);
+                    return res.json();
                 })
                 .then(data => {
-                    console.log("Resposta do servidor:", data);
-
                     if (data.status === 'sucesso') {
                         window.location.href = 'home.php';
-                        // Nota: Não resetamos o botão aqui pois a página mudará
                     } else {
                         const divAlerta = document.getElementById('mensagem-alerta');
                         if (divAlerta) {
                             divAlerta.innerText = data.mensagem;
                             divAlerta.classList.remove('alerta-oculto');
                             divAlerta.classList.add('alerta-ativo');
-
                             setTimeout(() => {
                                 divAlerta.classList.remove('alerta-ativo');
                                 divAlerta.classList.add('alerta-oculto');
@@ -40,290 +39,528 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 })
                 .catch(err => {
-                    console.error("Erro capturado:", err);
-                    alert("Erro ao conectar no servidor. Veja o console.");
+                    console.error("Erro:", err);
+                    alert("Erro ao conectar no servidor.");
                 })
                 .finally(() => {
-                    // ESTA É A MÁGICA: O botão reseta sempre, não importa o resultado
                     btn.innerText = "Entrar";
                     btn.disabled = false;
                 });
         });
     }
-});
 
-// HOME / COMANDAS
+    // --- MENSAGENS DE STATUS (URL) ---
+    const msgStatus = document.getElementById('msg-status');
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.has('status') && msgStatus) {
+        msgStatus.style.display = 'block';
+        window.history.replaceState({}, document.title, window.location.pathname);
+        setTimeout(() => { msgStatus.style.display = 'none'; }, 3000);
+    }
 
-const botoesFiltro = document.querySelectorAll('.btn-filtro');
-const listaComandas = document.querySelectorAll('.cartao-comanda');
-
-function aplicarFiltro(filtro) {
-    listaComandas.forEach(comanda => {
-        const statusComanda = comanda.getAttribute('data-status');
-
-        if (filtro === statusComanda) {
-            comanda.style.display = 'block'; // Nota: Mude para 'flex' se usar flexbox nos cartões
-        } else {
-            comanda.style.display = 'none';
-        }
-    });
-}
-
-botoesFiltro.forEach(botao => {
-    botao.addEventListener('click', () => {
-        botoesFiltro.forEach(b => b.classList.remove('active'));
-        botao.classList.add('active');
-
-        const filtroSelecionado = botao.getAttribute('data-filter');
-        aplicarFiltro(filtroSelecionado);
-    });
-});
-
-const botaoAtivoInicial = document.querySelector('.btn-filtro.active');
-if (botaoAtivoInicial) {
-    aplicarFiltro(botaoAtivoInicial.getAttribute('data-filter'));
-}
-
-// FUNÇÃO PARA ABRIR E FECHAR A TELA SOBREPOSTA DE NOVA COMANDA
-function abrirModal() {
-    document.getElementById('modal-comanda').style.display = 'flex';
-}
-
-function fecharModal() {
-    document.getElementById('modal-comanda').style.display = 'none';
-}
-
-document.addEventListener('DOMContentLoaded', () => {
-    // Ajuste o seletor se o seu botão for diferente
+    // --- BOTÃO ABRIR NOVA COMANDA ---
     const btnNovaComanda = document.querySelector('.btn-nova-comanda');
-
     if (btnNovaComanda) {
         btnNovaComanda.addEventListener('click', (e) => {
             e.preventDefault();
             abrirModal();
         });
     }
+
+    // ==========================================
+    // MOTOR PRINCIPAL DE BUSCA E FILTROS
+    // ==========================================
+    const botoesFiltro = document.querySelectorAll('.status .btn-filtro');
+    const inputBuscarComanda = document.getElementById('buscar-comanda');
+    const inputBuscarProduto = document.getElementById('buscar-produto');
+    const botoesPesquisar = document.querySelectorAll('.btn-pesquisar');
+
+    function atualizarVisualizacao() {
+        const botaoAtivo = document.querySelector('.status .btn-filtro.active');
+        const filtroAtual = botaoAtivo ? (botaoAtivo.getAttribute('data-filter') || '').trim().toLowerCase() : 'todos';
+
+        // ==========================================
+        // 1. ATUALIZA COMANDAS (Home)
+        // ==========================================
+        const listaComandas = document.querySelectorAll('.cartao-comanda');
+        if (listaComandas.length > 0) {
+            const termoComanda = inputBuscarComanda ? inputBuscarComanda.value.toLowerCase() : '';
+
+            let countAbertas = 0;
+            let countFiado = 0;
+            let countFechadas = 0;
+
+            listaComandas.forEach(comanda => {
+                const statusComanda = (comanda.getAttribute('data-status') || '').trim().toLowerCase();
+                const textoCartao = comanda.textContent.toLowerCase();
+
+                const matchAba = (filtroAtual === statusComanda);
+                const matchBusca = (termoComanda === '' || textoCartao.includes(termoComanda));
+
+                if (matchBusca) {
+                    if (statusComanda === 'aberta') countAbertas++;
+                    else if (statusComanda === 'fiado') countFiado++;
+                    else if (statusComanda === 'fechada') countFechadas++;
+                }
+
+                comanda.style.display = (matchAba && matchBusca) ? 'block' : 'none';
+            });
+
+            botoesFiltro.forEach(botao => {
+                const filtroBotao = botao.getAttribute('data-filter');
+                if (filtroBotao === 'aberta') {
+                    botao.innerHTML = `<span class="status-aberta"></span> Abertas (${countAbertas})`;
+                } else if (filtroBotao === 'fiado') {
+                    botao.innerHTML = `<span class="status-pendente"></span> Fiado (${countFiado})`;
+                } else if (filtroBotao === 'fechada') {
+                    botao.innerHTML = `<span class="status-fechada"></span> Fechadas (${countFechadas})`;
+                }
+            });
+        }
+
+        // ==========================================
+        // 2. ATUALIZA PRODUTOS (Página Produtos)
+        // ==========================================
+        const listaProdutos = document.querySelectorAll('.card-produto');
+        if (listaProdutos.length > 0) {
+            const termoProduto = inputBuscarProduto ? inputBuscarProduto.value.toLowerCase() : '';
+
+            listaProdutos.forEach(produto => {
+                const categoriaProduto = (produto.getAttribute('data-categoria') || '').trim().toLowerCase();
+                const textoProduto = produto.textContent.toLowerCase();
+
+                const matchAba = (filtroAtual === 'todos' || filtroAtual === categoriaProduto);
+                const matchBusca = (termoProduto === '' || textoProduto.includes(termoProduto));
+
+                produto.style.display = (matchAba && matchBusca) ? 'block' : 'none';
+            });
+
+            botoesFiltro.forEach(botao => {
+                const categoriaOriginal = botao.getAttribute('data-filter') || '';
+                const categoriaNormalizada = categoriaOriginal.trim().toLowerCase();
+
+                if (categoriaNormalizada === 'todos') {
+                    const visiveis = Array.from(listaProdutos).filter(c => {
+                        return termoProduto === '' || c.textContent.toLowerCase().includes(termoProduto);
+                    }).length;
+                    botao.innerHTML = `Todos (${visiveis})`;
+                } else {
+                    const visiveis = Array.from(listaProdutos).filter(c => {
+                        const matchB = termoProduto === '' || c.textContent.toLowerCase().includes(termoProduto);
+                        const cat = (c.getAttribute('data-categoria') || '').trim().toLowerCase();
+                        return matchB && cat === categoriaNormalizada;
+                    }).length;
+                    botao.innerHTML = `${categoriaOriginal} (${visiveis})`;
+                }
+            });
+        }
+    }
+
+    // Dispara a busca ao clicar nas abas
+    if (botoesFiltro.length > 0) {
+        botoesFiltro.forEach(botao => {
+            botao.addEventListener('click', () => {
+                botoesFiltro.forEach(b => b.classList.remove('active'));
+                botao.classList.add('active');
+                atualizarVisualizacao();
+            });
+        });
+        atualizarVisualizacao();
+    }
+
+    // Dispara a busca ao digitar no campo de Comandas
+    if (inputBuscarComanda) {
+        inputBuscarComanda.addEventListener('input', atualizarVisualizacao);
+    }
+
+    // Dispara a busca ao digitar no campo de Produtos
+    if (inputBuscarProduto) {
+        inputBuscarProduto.addEventListener('input', atualizarVisualizacao);
+    }
+
+    // Dispara a busca ao clicar no ícone de Lupa
+    if (botoesPesquisar.length > 0) {
+        botoesPesquisar.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                atualizarVisualizacao();
+            });
+        });
+    }
+
+    // --- CONFIRMAÇÃO DE EXCLUSÃO DE PRODUTO ---
+    const btnConfirmarExclusao = document.getElementById('btn-confirmar-exclusao');
+    if (btnConfirmarExclusao) {
+        btnConfirmarExclusao.addEventListener('click', () => {
+            if (idParaExcluir) {
+                window.location.href = 'api/acoes_produto.php?acao=excluir&id=' + idParaExcluir;
+            }
+        });
+    }
 });
+
+
+// ==========================================
+// MODAL: NOVA COMANDA
+// ==========================================
+function abrirModal() {
+    const modal = document.getElementById('modal-comanda');
+    if (modal) modal.style.display = 'flex';
+}
+
+function fecharModal() {
+    const modal = document.getElementById('modal-comanda');
+    if (modal) modal.style.display = 'none';
+
+    const step1 = document.getElementById('step-1');
+    const step2 = document.getElementById('step-2');
+    const erroCliente = document.getElementById('erro-cliente');
+    const formNovaComanda = document.getElementById('form-nova-comanda');
+
+    if (step1) step1.style.display = 'block';
+    if (step2) step2.style.display = 'none';
+    if (erroCliente) erroCliente.style.display = 'none';
+    if (formNovaComanda) formNovaComanda.reset();
+}
 
 function proximoPasso() {
     const inputNome = document.getElementById('cliente');
     const erroDiv = document.getElementById('erro-cliente');
 
-    // Validação: trim() remove espaços em branco antes/depois
     if (inputNome.value.trim() === "") {
         erroDiv.innerText = "Por favor, preencha o nome do cliente.";
-        erroDiv.style.display = "block"; // Mostra o balão
-        inputNome.focus(); // Coloca o cursor no campo
-        return; // Interrompe a função aqui
+        erroDiv.style.display = "block";
+        inputNome.focus();
+        return;
     }
 
-    // Se passou na validação, esconde o erro e muda a tela
     erroDiv.style.display = "none";
     document.getElementById('step-1').style.display = 'none';
-    document.getElementById('step-2').style.display = 'block';
+    document.getElementById('step-2').style.display = 'flex';
 }
 
 function voltarPasso() {
-    // Esconde qualquer erro remanescente ao voltar
     document.getElementById('erro-cliente').style.display = 'none';
     document.getElementById('step-2').style.display = 'none';
     document.getElementById('step-1').style.display = 'block';
 }
 
-function fecharModal() {
-    // Esconde o modal
-    document.getElementById('modal-comanda').style.display = 'none';
+function ajustarQtd(id, delta) {
+    // Tenta localizar o input pelo ID exato passado, depois pelas variantes com prefixo
+    let input = document.getElementById(id)
+             || document.getElementById('qtd-' + id)
+             || document.getElementById('edit-' + id);
 
-    // Reseta o estado para o passo 1
-    document.getElementById('step-1').style.display = 'block';
-    document.getElementById('step-2').style.display = 'none';
-
-    // Esconde o balão de erro caso ele estivesse visível
-    document.getElementById('erro-cliente').style.display = 'none';
-
-    // Reseta o formulário
-    document.getElementById('form-nova-comanda').reset();
+    if (input) {
+        let novoValor = (parseInt(input.value) || 0) + delta;
+        if (novoValor >= 0) input.value = novoValor;
+    } else {
+        console.error("Input não encontrado para o ID: " + id);
+    }
 }
 
-// NOVO PRODUTO
+// Filtro de categoria dentro do modal de Nova Comanda
+function filtrarProdutos(categoria) {
+    const containerModal = document.getElementById('modal-comanda');
+    if (!containerModal) return;
+
+    containerModal.querySelectorAll('.card-produto-sel').forEach(card => {
+        const categoriaCard = (card.getAttribute('data-categoria') || '').trim().toLowerCase();
+        const catFiltro = categoria.trim().toLowerCase();
+        card.style.display = (catFiltro === 'todos' || categoriaCard === catFiltro) ? 'flex' : 'none';
+    });
+
+    containerModal.querySelectorAll('.btn-filtro-modal').forEach(btn => {
+        btn.classList.remove('active');
+        if (btn.innerText.trim().toLowerCase() === categoria.trim().toLowerCase() ||
+            (categoria === 'todos' && btn.innerText.trim().toLowerCase() === 'todos')) {
+            btn.classList.add('active');
+        }
+    });
+}
+
+
+// ==========================================
+// MODAL: PRODUTOS (Painel Administrativo)
+// ==========================================
 function abrirModalProduto() {
-    document.getElementById('modal-novo-produto').classList.add('visivel');
+    const modal = document.getElementById('modal-novo-produto');
+    if (modal) {
+        modal.style.display = 'flex';
+        const h2 = modal.querySelector('h2');
+        if (h2) h2.innerText = 'Novo Produto';
+        const form = modal.querySelector('form');
+        if (form) {
+            form.action = 'api/salvar_produto.php';
+            form.reset();
+        }
+    }
 }
 
 function fecharModalProduto() {
-    document.getElementById('modal-novo-produto').classList.remove('visivel');
-}
-
-
-document.addEventListener('DOMContentLoaded', () => {
-    const msgStatus = document.getElementById('msg-status');
-
-    // Verifica se a URL tem o parâmetro 'status'
-    const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.has('status')) {
-        msgStatus.style.display = 'block'; // Mostra a mensagem
-
-        // Remove o parâmetro da URL para não mostrar a mensagem ao recarregar a página
-        window.history.replaceState({}, document.title, window.location.pathname);
-
-        // Esconde após 3 segundos
-        setTimeout(() => {
-            msgStatus.style.display = 'none';
-        }, 3000);
-    }
-});
-
-
-document.addEventListener('DOMContentLoaded', () => {
-    const botoesFiltro = document.querySelectorAll('.btn-filtro');
-    const cardsProdutos = document.querySelectorAll('.card-produto');
-
-    botoesFiltro.forEach(botao => {
-        botao.addEventListener('click', () => {
-            // 1. Remove a classe 'active' de todos os botões e adiciona no clicado
-            botoesFiltro.forEach(b => b.classList.remove('active'));
-            botao.classList.add('active');
-
-            // 2. Pega a categoria selecionada
-            const categoriaSelecionada = botao.getAttribute('data-filter');
-
-            // 3. Filtra os cards
-            cardsProdutos.forEach(card => {
-                const categoriaCard = card.getAttribute('data-categoria');
-
-                if (categoriaSelecionada === 'todos' || categoriaCard === categoriaSelecionada) {
-                    card.style.display = 'block'; // Mostra o card
-                } else {
-                    card.style.display = 'none'; // Esconde o card
-                }
-            });
-        });
-    });
-});
-
-// Função de busca
-function realizarBusca() {
-    const termo = document.getElementById('buscar-produto').value.toLowerCase();
-    const cards = document.querySelectorAll('.card-produto');
-    const botoesFiltro = document.querySelectorAll('.btn-filtro');
-
-    // 1. Filtra os produtos
-    cards.forEach(card => {
-        const nomeProduto = card.querySelector('p strong').textContent.toLowerCase();
-        if (nomeProduto.includes(termo)) {
-            card.style.display = 'block';
-        } else {
-            card.style.display = 'none';
-        }
-    });
-
-    // 2. Atualiza a contagem de cada categoria
-    botoesFiltro.forEach(botao => {
-        const categoria = botao.getAttribute('data-filter');
-
-        if (categoria === 'todos') {
-            const visiveis = Array.from(cards).filter(c => c.style.display !== 'none').length;
-            botao.innerHTML = `Todos (${visiveis})`;
-        } else {
-            // Conta apenas os cards visíveis que pertencem a esta categoria
-            const visiveis = Array.from(cards).filter(c =>
-                c.style.display !== 'none' && c.getAttribute('data-categoria') === categoria
-            ).length;
-
-            // Atualiza o texto (mantendo o nome da categoria)
-            botao.innerHTML = `${categoria} (${visiveis})`;
-        }
-    });
-}
-
-// Vincula o evento 'input'
-document.getElementById('buscar-produto').addEventListener('input', realizarBusca);
-
-// O EVENTO 'input' detecta cada tecla digitada ou apagada
-document.getElementById('buscar-produto').addEventListener('input', realizarBusca);
-
-// Opcional: Manter o botão funcionando caso o usuário prefira clicar
-document.querySelector('.btn-pesquisar').addEventListener('click', realizarBusca);
-
-
-function excluirProduto(id) {
-    // SEM o confirm, ele executa direto
-    const form = document.createElement('form');
-    form.method = 'POST';
-    form.action = '/saas-gestao-comandas/api/acoes_produto.php';
-    
-    const inputAcao = document.createElement('input');
-    inputAcao.type = 'hidden';
-    inputAcao.name = 'acao';
-    inputAcao.value = 'excluir';
-    
-    const inputId = document.createElement('input');
-    inputId.type = 'hidden';
-    inputId.name = 'id';
-    inputId.value = id;
-    
-    form.appendChild(inputAcao);
-    form.appendChild(inputId);
-    document.body.appendChild(form);
-    form.submit();
+    const modal = document.getElementById('modal-novo-produto');
+    if (modal) modal.style.display = 'none';
 }
 
 let idParaExcluir = null;
-
 function excluirProduto(id) {
     idParaExcluir = id;
-    document.getElementById('modal-confirmacao').style.display = 'flex';
+    const modal = document.getElementById('modal-confirmacao');
+    if (modal) modal.style.display = 'flex';
 }
 
 function fecharConfirmacao() {
-    document.getElementById('modal-confirmacao').style.display = 'none';
+    const modal = document.getElementById('modal-confirmacao');
+    if (modal) modal.style.display = 'none';
 }
-
-// Ao clicar no botão dentro do modal
-document.getElementById('btn-confirmar-exclusao').addEventListener('click', () => {
-    if (idParaExcluir) {
-        window.location.href = 'api/acoes_produto.php?acao=excluir&id=' + idParaExcluir;
-    }
-});
 
 function editarProduto(id) {
     fetch(`api/get_produto.php?id=${id}`)
-        .then(response => response.json())
+        .then(res => res.json())
         .then(data => {
             const modal = document.getElementById('modal-novo-produto');
             const form = modal.querySelector('form');
-            
-            // 1. Muda o título
+
             modal.querySelector('h2').innerText = 'Editar Produto';
-            
-            // 2. Garante que o action esteja apontando para o arquivo base
-            // Não precisamos mais do ?id=${id} na URL aqui
             form.action = 'api/salvar_produto.php';
-            
-            // 3. Preenche o campo oculto (ID) que criamos no HTML
+
             const inputId = form.querySelector('input[name="id"]');
-            if (inputId) {
-                inputId.value = id;
-            }
-            
-            // 4. Preenche os campos de texto
+            if (inputId) inputId.value = id;
+
             form.querySelector('input[name="nome"]').value = data.nome;
             form.querySelector('input[name="valor"]').value = data.valor;
             form.querySelector('input[name="categoria"]').value = data.categoria;
-            
-            // 5. Abre o modal
+
             modal.style.display = 'flex';
         });
 }
 
-function abrirModalProduto() {
-    document.getElementById('modal-novo-produto').style.display = 'flex';
-    // Reseta o título e o action para modo "Novo"
-    document.querySelector('#modal-novo-produto h2').innerText = 'Novo Produto';
-    document.querySelector('#modal-novo-produto form').action = 'api/salvar_produto.php';
-    document.querySelector('#modal-novo-produto form').reset();
+
+// ==========================================
+// MODAL: AÇÕES DA COMANDA (Visualizar / Pagar)
+// ==========================================
+function alternarPagamento(mostrarPagamento) {
+    const vis = document.getElementById('visualizacao-conta');
+    const menu = document.getElementById('menu-pagamento');
+    if (vis) vis.style.display = mostrarPagamento ? 'none' : 'block';
+    if (menu) menu.style.display = mostrarPagamento ? 'block' : 'none';
 }
 
-function fecharModalProduto() {
-    document.getElementById('modal-novo-produto').style.display = 'none';
+function abrirAcoes(id, cliente, status, metodoPagamento = '') {
+    document.getElementById('num-comanda').innerText = id;
+    document.getElementById('nome-cliente').innerText = cliente;
+
+    alternarPagamento(false);
+
+    const podePagar = (status === 'aberta' || status === 'fiado');
+    const botoes = document.querySelectorAll('#menu-pagamento .btn-pagar');
+
+    botoes.forEach(btn => {
+        btn.disabled = !podePagar;
+
+        // Reseta as cores para não herdar o estado de uma comanda anterior
+        btn.style.backgroundColor = '';
+        btn.style.color = '';
+        btn.style.borderColor = '';
+
+        // Destaca em verde o método já salvo na comanda
+        if (metodoPagamento !== '' && btn.getAttribute('data-metodo') === metodoPagamento) {
+            btn.style.backgroundColor = '#28a745';
+            btn.style.color = '#ffffff';
+            btn.style.borderColor = '#28a745';
+        }
+    });
+
+    fetch('api/get_comanda.php?id=' + id)
+        .then(res => res.json())
+        .then(data => {
+            let html = '<table style="width:100%; border-collapse: collapse;">';
+            html += '<tr><th>Data</th><th>Produto</th><th>Qtd</th><th>Valor</th><th>Total</th></tr>';
+
+            data.itens.forEach(item => {
+                // Formata a data com segurança — campo pode não existir em registros antigos
+                let dataFormatada = '—';
+                if (item.data_criacao) {
+                    let dataObj = new Date(item.data_criacao.replace(' ', 'T'));
+                    dataFormatada = dataObj.toLocaleDateString('pt-BR');
+                }
+
+                html += `<tr style="text-align:center;">
+                    <td>${dataFormatada}</td>
+                    <td>${item.nome_produto ?? 'Sem nome'}</td>
+                    <td>${item.quantidade ?? 0}</td>
+                    <td>${item.valor_unitario ?? '0.00'}</td>
+                    <td>R$ ${parseFloat((item.quantidade ?? 0) * (item.valor_unitario ?? 0)).toFixed(2)}</td>
+                </tr>`;
+            });
+            html += '</table>';
+
+            const lista = document.getElementById('lista-itens-edit');
+            if (lista) lista.innerHTML = html;
+
+            const modal = document.getElementById('modal-acoes');
+            if (modal) modal.style.display = 'flex';
+        })
+        .catch(err => console.error("Erro ao carregar comanda:", err));
 }
+
+function fecharModalAcoes() {
+    const modal = document.getElementById('modal-acoes');
+    if (modal) modal.style.display = 'none';
+}
+
+
+// ==========================================
+// PROCESSAMENTO DE PAGAMENTO
+// ==========================================
+function prepararPagamento(metodo) {
+    metodoPagamentoSelecionado = metodo;
+    const el = document.getElementById('metodo-selecionado');
+    if (el) el.innerText = metodo.replace('_', ' ').toUpperCase();
+
+    const modal = document.getElementById('modal-confirmacao-pagamento');
+    if (modal) modal.style.display = 'flex';
+}
+
+function executarPagamento() {
+    const comandaId = document.getElementById('num-comanda').innerText;
+
+    if (metodoPagamentoSelecionado === '') {
+        alert("Erro: Forma de pagamento não selecionada.");
+        return;
+    }
+
+    fetch('api/processar_pagamento.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({
+            comanda_id: comandaId,
+            metodo: metodoPagamentoSelecionado
+        })
+    })
+        .then(res => res.json())
+        .then(data => {
+            if (data.status === 'sucesso') {
+                location.reload();
+            } else {
+                alert("Erro: " + (data.mensagem || "Falha no processamento"));
+            }
+        })
+        .catch(err => {
+            console.error("Erro no fetch:", err);
+            alert("Erro ao conectar no servidor. Veja o console (F12).");
+        });
+}
+
+
+// ==========================================
+// MODAL: EDITAR ITENS DA COMANDA
+// ==========================================
+window.abrirModalEdicao = function(id) {
+    const modal = document.getElementById('modal-editar-itens');
+    const grid = document.getElementById('grid-itens-edicao');
+    const filtros = document.getElementById('filtros-edicao');
+    const editId = document.getElementById('edit-num-comanda');
+    const editComandaId = document.getElementById('edit-comanda-id');
+
+    if (!modal) return;
+
+    // Preenche o número da comanda no título e no campo oculto do form
+    if (editId) editId.innerText = id;
+    if (editComandaId) editComandaId.value = id;
+
+    // Exibe estado de carregamento enquanto os dados chegam
+    grid.innerHTML = '<p style="text-align:center; color:#888;">Carregando produtos...</p>';
+    filtros.innerHTML = '';
+
+    // Busca em paralelo: todos os produtos disponíveis + itens já salvos na comanda
+    Promise.all([
+        fetch('api/get_produtos.php').then(r => r.json()),       // { produtos: [...] }
+        fetch('api/get_comanda.php?id=' + id).then(r => r.json()) // { itens: [...] }
+    ])
+    .then(([dadosProdutos, dadosComanda]) => {
+        const produtos = dadosProdutos.produtos || [];
+        const itens = dadosComanda.itens || [];
+
+        // Monta um mapa produto_id → quantidade para pré-preencher os inputs rapidamente
+        const qtdSalva = {};
+        itens.forEach(item => {
+            qtdSalva[item.produto_id] = item.quantidade;
+        });
+
+        // Extrai categorias únicas para os botões de filtro
+        const categorias = [...new Set(produtos.map(p => p.categoria).filter(Boolean))];
+
+        // Monta os botões de filtro de categoria
+        let htmlFiltros = `<button type="button" class="btn-filtro-modal active" onclick="filtrarProdutosEdicao('todos')">Todos</button>`;
+        categorias.forEach(cat => {
+            // Escapa apóstrofos para não quebrar o onclick caso o nome da categoria os contenha
+            const catEscapada = cat.replace(/'/g, "\\'");
+            htmlFiltros += `<button type="button" class="btn-filtro-modal" onclick="filtrarProdutosEdicao('${catEscapada}')">${cat}</button>`;
+        });
+        filtros.innerHTML = htmlFiltros;
+
+        // Monta o grid de produtos idêntico ao step-2 da nova comanda,
+        // mas com as quantidades já preenchidas conforme o que está salvo
+        let htmlGrid = '';
+        produtos.forEach(p => {
+            const qtdAtual = qtdSalva[p.id] || 0;
+            htmlGrid += `
+                <div class="card-produto-sel" data-categoria="${p.categoria ?? ''}">
+                    <img src="${p.imagem ?? ''}" alt="Produto">
+                    <p class="nome-produto">${p.nome}</p>
+                    <p class="valor-produto">R$ ${parseFloat(p.valor).toFixed(2).replace('.', ',')}</p>
+                    <div class="controles-qtd">
+                        <button type="button" class="btn-qtd" onclick="ajustarQtd('edit-${p.id}', -1)">-</button>
+                        <input type="number" name="qtd-${p.id}" id="edit-${p.id}" value="${qtdAtual}" min="0">
+                        <button type="button" class="btn-qtd" onclick="ajustarQtd('edit-${p.id}', 1)">+</button>
+                    </div>
+                </div>`;
+        });
+        grid.innerHTML = htmlGrid;
+
+        modal.style.display = 'flex';
+    })
+    .catch(err => {
+        console.error('Erro ao carregar modal de edição:', err);
+        grid.innerHTML = '<p style="color:red;">Erro ao carregar produtos.</p>';
+    });
+};
+
+// Filtro de categoria dentro do modal de edição
+function filtrarProdutosEdicao(categoria) {
+    const modal = document.getElementById('modal-editar-itens');
+    if (!modal) return;
+
+    modal.querySelectorAll('.card-produto-sel').forEach(card => {
+        const cat = (card.getAttribute('data-categoria') || '').trim().toLowerCase();
+        const filtro = categoria.trim().toLowerCase();
+        card.style.display = (filtro === 'todos' || cat === filtro) ? 'flex' : 'none';
+    });
+
+    modal.querySelectorAll('.btn-filtro-modal').forEach(btn => {
+        btn.classList.toggle('active',
+            btn.innerText.trim().toLowerCase() === categoria.trim().toLowerCase() ||
+            (categoria === 'todos' && btn.innerText.trim().toLowerCase() === 'todos')
+        );
+    });
+}
+
+window.fecharModalEdicao = function() {
+    const modal = document.getElementById('modal-editar-itens');
+    if (modal) modal.style.display = 'none';
+};
+
+
+// ==========================================
+// MODAL: ADICIONAR ITENS (função reservada)
+// ==========================================
+window.abrirSelecaoAdicao = function () {
+    const modal = document.getElementById('modal-adicionar-itens');
+    if (modal) modal.style.display = 'flex';
+};
+
+window.fecharAdicao = function () {
+    const modal = document.getElementById('modal-adicionar-itens');
+    if (modal) modal.style.display = 'none';
+};
