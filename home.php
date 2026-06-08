@@ -62,33 +62,6 @@ foreach ($resultados as $res) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SaaS Gestão de Comandas - Home</title>
     <link rel="stylesheet" href="css/style.css">
-
-    <style>
-        .cartao-comanda h3 {
-            margin: 0 0 8px 0;
-            font-size: 1.15em;
-            color: #222;
-        }
-
-        .cartao-comanda p {
-            margin: 0 0 6px 0;
-            font-size: 0.9em;
-            color: #555;
-        }
-
-        .cartao-comanda .destaque-valor {
-            font-weight: bold;
-            color: #111;
-            font-size: 1.05em;
-        }
-
-        .cartao-comanda .status-text {
-            text-transform: uppercase;
-            font-size: 0.8em;
-            font-weight: bold;
-            letter-spacing: 0.5px;
-        }
-    </style>
 </head>
 
 <body class="home">
@@ -157,7 +130,8 @@ foreach ($resultados as $res) {
                 <div id="step-1" class="new-comanda">
                     <h2>Nova Comanda (1/2)</h2>
                     <div id="erro-cliente" class="balao-erro" style="display: none;"></div>
-                    <input type="text" id="cliente" name="cliente" placeholder="Nome do Cliente" required>
+                    <input type="text" id="cliente" name="cliente" placeholder="Nome do Cliente ou Número da Mesa"
+                        required>
                     <div class="modal-actions">
                         <button type="button" class="btn-cancelar" onclick="fecharModal()">Cancelar</button>
                         <button type="button" class="btn-acao" onclick="proximoPasso()">Próximo</button>
@@ -211,7 +185,7 @@ foreach ($resultados as $res) {
             <div id="visualizacao-conta">
                 <div id="lista-itens-edit"></div>
                 <div class="modal-actions">
-                    <button class="btn-acao" style="background-color: #28a745;"
+                    <button id="btn-editar-produtos" class="btn-acao""
                         onclick="abrirModalEdicao(document.getElementById('num-comanda').innerText)">
                         Editar / Adicionar Produtos
                     </button>
@@ -249,30 +223,30 @@ foreach ($resultados as $res) {
         </div>
     </div>
 
-<div id="modal-editar-itens" class="modal-overlay" style="display:none;">
-    <div class="modal-content">
-        <h2>Editar Itens da Comanda #<span id="edit-num-comanda"></span></h2>
+    <div id="modal-editar-itens" class="modal-overlay" style="display:none;">
+        <div class="modal-content">
+            <h2>Editar Itens da Comanda #<span id="edit-num-comanda"></span></h2>
 
-        <form id="form-editar-itens" action="api/salvar_edicao_comanda.php" method="POST">
-            <input type="hidden" name="comanda_id" id="edit-comanda-id">
+            <form id="form-editar-itens" action="api/salvar_edicao_comanda.php" method="POST">
+                <input type="hidden" name="comanda_id" id="edit-comanda-id">
 
-            <!-- Filtros de categoria, igual ao step-2 da nova comanda -->
-            <div id="filtros-edicao" class="status-filtros" style="margin-bottom: 10px;">
-                <!-- Preenchido dinamicamente pelo JS -->
-            </div>
+                <!-- Filtros de categoria, igual ao step-2 da nova comanda -->
+                <div id="filtros-edicao" class="status-filtros" style="margin-bottom: 10px;">
+                    <!-- Preenchido dinamicamente pelo JS -->
+                </div>
 
-            <!-- Grid de produtos, igual ao step-2 -->
-            <div id="grid-itens-edicao" class="grid-produtos-comanda">
-                <!-- Preenchido dinamicamente pelo JS -->
-            </div>
+                <!-- Grid de produtos, igual ao step-2 -->
+                <div id="grid-itens-edicao" class="grid-produtos-comanda">
+                    <!-- Preenchido dinamicamente pelo JS -->
+                </div>
 
-            <div class="modal-actions" style="margin-top: 15px;">
-                <button type="button" class="btn-cancelar" onclick="fecharModalEdicao()">Fechar</button>
-                <button type="submit" class="btn-acao">Salvar Alterações</button>
-            </div>
-        </form>
+                <div class="modal-actions" style="margin-top: 15px;">
+                    <button type="button" class="btn-cancelar" onclick="fecharModalEdicao()">Fechar</button>
+                    <button type="submit" class="btn-acao">Salvar Alterações</button>
+                </div>
+            </form>
+        </div>
     </div>
-</div>
 
 
     <script src="js/script.js" defer></script>

@@ -379,7 +379,6 @@ body.home {
     }
 }
 
-/* Container que permite o scroll horizontal */
 .status {
     overflow-x: auto;
     /* Habilita a barra de rolagem apenas quando necessário */
@@ -392,7 +391,6 @@ body.home {
     /* Deixa a barra mais fina no Firefox */
 }
 
-/* Ajuste para o Chrome/Safari para a barra ficar discreta */
 .status::-webkit-scrollbar {
     height: 6px;
 }
@@ -402,7 +400,6 @@ body.home {
     border-radius: 4px;
 }
 
-/* Garante que a lista fique em uma linha só */
 .status ul {
     display: inline-flex;
     /* Faz o ul respeitar o tamanho do conteúdo */
@@ -412,7 +409,6 @@ body.home {
     margin: 0;
 }
 
-/* Opcional: Garante que os botões não fiquem "esticados" */
 .btn-filtro {
     flex-shrink: 0;
     /* Impede que os botões fiquem achatados */
@@ -637,7 +633,8 @@ body.home {
     /* Flex coluna para que o conteúdo interno possa distribuir a altura */
     display: flex;
     flex-direction: column;
-    overflow: hidden; /* O scroll fica APENAS no grid, não no modal todo */
+    overflow: hidden;
+    /* O scroll fica APENAS no grid, não no modal todo */
 }
 
 /* O form precisa ser flex coluna também para repassar a altura disponível */
@@ -645,7 +642,8 @@ body.home {
 #form-editar-itens {
     display: flex;
     flex-direction: column;
-    flex: 1;       /* Ocupa todo o espaço vertical disponível dentro do modal */
+    flex: 1;
+    /* Ocupa todo o espaço vertical disponível dentro do modal */
     overflow: hidden;
     gap: 12px;
 }
@@ -674,7 +672,8 @@ body.home {
     /* Limita a 2 linhas: cada badge tem ~30px + 8px de gap entre linhas */
     max-height: calc(2 * 30px + 8px);
     overflow: hidden;
-    flex-shrink: 0; /* Não encolhe — mantém espaço fixo acima do grid */
+    flex-shrink: 0;
+    /* Não encolhe — mantém espaço fixo acima do grid */
 }
 
 /* Grid com scroll interno — o único elemento que rola */
@@ -683,16 +682,29 @@ body.home {
     grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
     gap: 16px;
     padding: 12px;
-    overflow-y: auto;   /* Scroll acontece aqui */
-    flex: 1;            /* Cresce para preencher o espaço restante */
-    min-height: 0;      /* Sem isso, flex ignora o overflow — truque essencial */
+    overflow-y: auto;
+    /* Scroll acontece aqui */
+    flex: 1;
+    /* Cresce para preencher o espaço restante */
+    min-height: 0;
+    /* Sem isso, flex ignora o overflow — truque essencial */
     scrollbar-width: thin;
     scrollbar-color: #c7d2fe #f4f5f7;
 }
 
-.grid-produtos-comanda::-webkit-scrollbar { width: 6px; }
-.grid-produtos-comanda::-webkit-scrollbar-track { background: #f4f5f7; border-radius: 4px; }
-.grid-produtos-comanda::-webkit-scrollbar-thumb { background-color: #c7d2fe; border-radius: 4px; }
+.grid-produtos-comanda::-webkit-scrollbar {
+    width: 6px;
+}
+
+.grid-produtos-comanda::-webkit-scrollbar-track {
+    background: #f4f5f7;
+    border-radius: 4px;
+}
+
+.grid-produtos-comanda::-webkit-scrollbar-thumb {
+    background-color: #c7d2fe;
+    border-radius: 4px;
+}
 
 /* Cartão do Produto (igual nos dois modais) */
 .card-produto-sel {
@@ -746,7 +758,7 @@ body.home {
     border-radius: 10px;
     width: 90%;
     max-width: 900px;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
 }
 
 #lista-itens-edit {
@@ -786,22 +798,30 @@ body.home {
     border: 1px solid #e6e6e6;
     border-radius: 8px;
     padding: 18px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
     transition: transform 0.2s ease, box-shadow 0.2s ease;
     display: block;
 }
 
 .cartao-comanda:hover {
     transform: translateY(-3px);
-    box-shadow: 0 6px 12px rgba(0,0,0,0.08);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.08);
 }
 
 /* =========================================
    CORES LATERAIS BASEADAS NO STATUS
    ========================================= */
-.cartao-comanda[data-status="aberta"]  { border-right: 6px solid #28a745; }
-.cartao-comanda[data-status="fiado"]   { border-right: 6px solid #dc3545; }
-.cartao-comanda[data-status="fechada"] { border-right: 6px solid #47494b; }
+.cartao-comanda[data-status="aberta"] {
+    border-right: 6px solid #28a745;
+}
+
+.cartao-comanda[data-status="fiado"] {
+    border-right: 6px solid #dc3545;
+}
+
+.cartao-comanda[data-status="fechada"] {
+    border-right: 6px solid #47494b;
+}
 
 /* =========================================
    TEXTOS E ESPAÇAMENTOS INTERNOS
@@ -816,6 +836,18 @@ body.home {
 .cartao-comanda p strong {
     font-size: 1.1em;
     color: #111;
+}
+
+.cartao-comanda h3 {
+    margin: 0 0 8px 0;
+    font-size: 1.15em;
+    color: #222;
+}
+
+.cartao-comanda .destaque-valor {
+    font-weight: bold;
+    color: #111;
+    font-size: 1.05em;
 }
 
 .cartao-comanda .btn-editar {
@@ -857,7 +889,9 @@ body.home {
     transition: color 0.2s ease;
 }
 
-.status .btn-filtro:hover { color: #333; }
+.status .btn-filtro:hover {
+    color: #333;
+}
 
 .status .btn-filtro.active {
     color: #007bff;
@@ -884,12 +918,25 @@ body.home {
     border-radius: 4px;
     margin-left: 4px;
     display: inline-block;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+
+    text-transform: uppercase;
+    font-size: 0.8em;
+    font-weight: bold;
+    letter-spacing: 0.5px;
 }
 
-.cartao-comanda[data-status="aberta"]  .status-text { background-color: #28a745; }
-.cartao-comanda[data-status="fiado"]   .status-text { background-color: #dc3545; }
-.cartao-comanda[data-status="fechada"] .status-text { background-color: #47494b; }
+.cartao-comanda[data-status="aberta"] .status-text {
+    background-color: #28a745;
+}
+
+.cartao-comanda[data-status="fiado"] .status-text {
+    background-color: #dc3545;
+}
+
+.cartao-comanda[data-status="fechada"] .status-text {
+    background-color: #47494b;
+}
 
 /* =========================================
    MODAL EDITAR ITENS — overlay
@@ -897,8 +944,11 @@ body.home {
 #modal-editar-itens {
     display: none;
     position: fixed;
-    top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0,0,0,0.6);
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
     z-index: 20000 !important;
     justify-content: center;
     align-items: center;
@@ -934,4 +984,8 @@ body.home {
     border-color: #3b82f6;
     color: #ffffff;
     box-shadow: 0 2px 6px rgba(59, 130, 246, 0.35);
+}
+
+#btn-editar-produtos {
+    background-color: #28a745;
 }

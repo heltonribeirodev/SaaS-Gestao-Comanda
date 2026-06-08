@@ -1,11 +1,5 @@
-// ==========================================
-// CONFIGURAÇÃO GLOBAL
-// ==========================================
 let metodoPagamentoSelecionado = '';
 
-// ==========================================
-// INICIALIZAÇÃO E EVENTOS (Ao carregar a página)
-// ==========================================
 document.addEventListener('DOMContentLoaded', () => {
 
     // --- LOGIN ---
@@ -49,15 +43,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // --- MENSAGENS DE STATUS (URL) ---
-    const msgStatus = document.getElementById('msg-status');
-    const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.has('status') && msgStatus) {
-        msgStatus.style.display = 'block';
-        window.history.replaceState({}, document.title, window.location.pathname);
-        setTimeout(() => { msgStatus.style.display = 'none'; }, 3000);
-    }
-
     // --- BOTÃO ABRIR NOVA COMANDA ---
     const btnNovaComanda = document.querySelector('.btn-nova-comanda');
     if (btnNovaComanda) {
@@ -67,9 +52,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // ==========================================
-    // MOTOR PRINCIPAL DE BUSCA E FILTROS
-    // ==========================================
     const botoesFiltro = document.querySelectorAll('.status .btn-filtro');
     const inputBuscarComanda = document.getElementById('buscar-comanda');
     const inputBuscarProduto = document.getElementById('buscar-produto');
@@ -79,9 +61,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const botaoAtivo = document.querySelector('.status .btn-filtro.active');
         const filtroAtual = botaoAtivo ? (botaoAtivo.getAttribute('data-filter') || '').trim().toLowerCase() : 'todos';
 
-        // ==========================================
-        // 1. ATUALIZA COMANDAS (Home)
-        // ==========================================
         const listaComandas = document.querySelectorAll('.cartao-comanda');
         if (listaComandas.length > 0) {
             const termoComanda = inputBuscarComanda ? inputBuscarComanda.value.toLowerCase() : '';
@@ -118,9 +97,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
-        // ==========================================
-        // 2. ATUALIZA PRODUTOS (Página Produtos)
-        // ==========================================
+        //  PAGINA PRODUTOS
         const listaProdutos = document.querySelectorAll('.card-produto');
         if (listaProdutos.length > 0) {
             const termoProduto = inputBuscarProduto ? inputBuscarProduto.value.toLowerCase() : '';
@@ -156,7 +133,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Dispara a busca ao clicar nas abas
     if (botoesFiltro.length > 0) {
         botoesFiltro.forEach(botao => {
             botao.addEventListener('click', () => {
@@ -168,17 +144,14 @@ document.addEventListener('DOMContentLoaded', () => {
         atualizarVisualizacao();
     }
 
-    // Dispara a busca ao digitar no campo de Comandas
     if (inputBuscarComanda) {
         inputBuscarComanda.addEventListener('input', atualizarVisualizacao);
     }
 
-    // Dispara a busca ao digitar no campo de Produtos
     if (inputBuscarProduto) {
         inputBuscarProduto.addEventListener('input', atualizarVisualizacao);
     }
 
-    // Dispara a busca ao clicar no ícone de Lupa
     if (botoesPesquisar.length > 0) {
         botoesPesquisar.forEach(btn => {
             btn.addEventListener('click', (e) => {
@@ -188,7 +161,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // --- CONFIRMAÇÃO DE EXCLUSÃO DE PRODUTO ---
     const btnConfirmarExclusao = document.getElementById('btn-confirmar-exclusao');
     if (btnConfirmarExclusao) {
         btnConfirmarExclusao.addEventListener('click', () => {
@@ -199,10 +171,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-
-// ==========================================
-// MODAL: NOVA COMANDA
-// ==========================================
+// MODAL NOVA COMANDA
 function abrirModal() {
     const modal = document.getElementById('modal-comanda');
     if (modal) modal.style.display = 'flex';
@@ -246,10 +215,9 @@ function voltarPasso() {
 }
 
 function ajustarQtd(id, delta) {
-    // Tenta localizar o input pelo ID exato passado, depois pelas variantes com prefixo
     let input = document.getElementById(id)
-             || document.getElementById('qtd-' + id)
-             || document.getElementById('edit-' + id);
+        || document.getElementById('qtd-' + id)
+        || document.getElementById('edit-' + id);
 
     if (input) {
         let novoValor = (parseInt(input.value) || 0) + delta;
@@ -259,8 +227,7 @@ function ajustarQtd(id, delta) {
     }
 }
 
-// Filtro de categoria dentro do modal de Nova Comanda
-function filtrarProdutos(categoria) {
+function filtrarProdutos(categoria) { // FILTRAR PRODUTOS DENTRO DA COMANDA
     const containerModal = document.getElementById('modal-comanda');
     if (!containerModal) return;
 
@@ -279,10 +246,7 @@ function filtrarProdutos(categoria) {
     });
 }
 
-
-// ==========================================
-// MODAL: PRODUTOS (Painel Administrativo)
-// ==========================================
+// MODAL NOVO PRODUTO
 function abrirModalProduto() {
     const modal = document.getElementById('modal-novo-produto');
     if (modal) {
@@ -335,10 +299,7 @@ function editarProduto(id) {
         });
 }
 
-
-// ==========================================
-// MODAL: AÇÕES DA COMANDA (Visualizar / Pagar)
-// ==========================================
+// AÇÕES DENTRO DA COMANDA
 function alternarPagamento(mostrarPagamento) {
     const vis = document.getElementById('visualizacao-conta');
     const menu = document.getElementById('menu-pagamento');
@@ -352,33 +313,45 @@ function abrirAcoes(id, cliente, status, metodoPagamento = '') {
 
     alternarPagamento(false);
 
+    const btnEditar = document.getElementById('btn-editar-produtos'); // SE SITUAÇÃO = FECHADA, BLOQUEIA EDIÇÃO DE ITENS
+    if (btnEditar) {
+        if (status === 'fechada') {
+            btnEditar.disabled = true;
+            btnEditar.style.backgroundColor = '#adb5bd';
+            btnEditar.style.cursor = 'not-allowed';
+            btnEditar.title = 'Não é possível editar uma comanda fechada';
+        } else {
+            btnEditar.disabled = false;
+            btnEditar.style.backgroundColor = '#28a745';
+            btnEditar.style.cursor = 'pointer';
+            btnEditar.title = '';
+        }
+    }
+
     const podePagar = (status === 'aberta' || status === 'fiado');
     const botoes = document.querySelectorAll('#menu-pagamento .btn-pagar');
 
     botoes.forEach(btn => {
         btn.disabled = !podePagar;
 
-        // Reseta as cores para não herdar o estado de uma comanda anterior
         btn.style.backgroundColor = '';
         btn.style.color = '';
         btn.style.borderColor = '';
 
-        // Destaca em verde o método já salvo na comanda
-        if (metodoPagamento !== '' && btn.getAttribute('data-metodo') === metodoPagamento) {
+        if (metodoPagamento !== '' && btn.getAttribute('data-metodo') === metodoPagamento) { // DESTACA EM VERDE QUAL FOI O METÓDO DE PAGAMENTO REALIZADO
             btn.style.backgroundColor = '#28a745';
             btn.style.color = '#ffffff';
             btn.style.borderColor = '#28a745';
         }
     });
 
-    fetch('api/get_comanda.php?id=' + id)
+    fetch('api/get_comanda.php?id=' + id) // TABELA DE PRODUTO AO VISUALIZAR A COMANDA
         .then(res => res.json())
         .then(data => {
             let html = '<table style="width:100%; border-collapse: collapse;">';
             html += '<tr><th>Data</th><th>Produto</th><th>Qtd</th><th>Valor</th><th>Total</th></tr>';
 
             data.itens.forEach(item => {
-                // Formata a data com segurança — campo pode não existir em registros antigos
                 let dataFormatada = '—';
                 if (item.data_criacao) {
                     let dataObj = new Date(item.data_criacao.replace(' ', 'T'));
@@ -409,10 +382,7 @@ function fecharModalAcoes() {
     if (modal) modal.style.display = 'none';
 }
 
-
-// ==========================================
 // PROCESSAMENTO DE PAGAMENTO
-// ==========================================
 function prepararPagamento(metodo) {
     metodoPagamentoSelecionado = metodo;
     const el = document.getElementById('metodo-selecionado');
@@ -452,11 +422,8 @@ function executarPagamento() {
         });
 }
 
-
-// ==========================================
-// MODAL: EDITAR ITENS DA COMANDA
-// ==========================================
-window.abrirModalEdicao = function(id) {
+// MODAL PARA EDITAR ITENS NA COMANDA
+window.abrirModalEdicao = function (id) {
     const modal = document.getElementById('modal-editar-itens');
     const grid = document.getElementById('grid-itens-edicao');
     const filtros = document.getElementById('filtros-edicao');
@@ -465,47 +432,38 @@ window.abrirModalEdicao = function(id) {
 
     if (!modal) return;
 
-    // Preenche o número da comanda no título e no campo oculto do form
     if (editId) editId.innerText = id;
     if (editComandaId) editComandaId.value = id;
 
-    // Exibe estado de carregamento enquanto os dados chegam
     grid.innerHTML = '<p style="text-align:center; color:#888;">Carregando produtos...</p>';
     filtros.innerHTML = '';
 
-    // Busca em paralelo: todos os produtos disponíveis + itens já salvos na comanda
     Promise.all([
-        fetch('api/get_produtos.php').then(r => r.json()),       // { produtos: [...] }
-        fetch('api/get_comanda.php?id=' + id).then(r => r.json()) // { itens: [...] }
+        fetch('api/get_produtos.php').then(r => r.json()),
+        fetch('api/get_comanda.php?id=' + id).then(r => r.json())
     ])
-    .then(([dadosProdutos, dadosComanda]) => {
-        const produtos = dadosProdutos.produtos || [];
-        const itens = dadosComanda.itens || [];
+        .then(([dadosProdutos, dadosComanda]) => {
+            const produtos = dadosProdutos.produtos || [];
+            const itens = dadosComanda.itens || [];
 
-        // Monta um mapa produto_id → quantidade para pré-preencher os inputs rapidamente
-        const qtdSalva = {};
-        itens.forEach(item => {
-            qtdSalva[item.produto_id] = item.quantidade;
-        });
+            const qtdSalva = {};
+            itens.forEach(item => {
+                qtdSalva[item.produto_id] = item.quantidade;
+            });
 
-        // Extrai categorias únicas para os botões de filtro
-        const categorias = [...new Set(produtos.map(p => p.categoria).filter(Boolean))];
+            const categorias = [...new Set(produtos.map(p => p.categoria).filter(Boolean))];
 
-        // Monta os botões de filtro de categoria
-        let htmlFiltros = `<button type="button" class="btn-filtro-modal active" onclick="filtrarProdutosEdicao('todos')">Todos</button>`;
-        categorias.forEach(cat => {
-            // Escapa apóstrofos para não quebrar o onclick caso o nome da categoria os contenha
-            const catEscapada = cat.replace(/'/g, "\\'");
-            htmlFiltros += `<button type="button" class="btn-filtro-modal" onclick="filtrarProdutosEdicao('${catEscapada}')">${cat}</button>`;
-        });
-        filtros.innerHTML = htmlFiltros;
+            let htmlFiltros = `<button type="button" class="btn-filtro-modal active" onclick="filtrarProdutosEdicao('todos')">Todos</button>`;
+            categorias.forEach(cat => {
+                const catEscapada = cat.replace(/'/g, "\\'");
+                htmlFiltros += `<button type="button" class="btn-filtro-modal" onclick="filtrarProdutosEdicao('${catEscapada}')">${cat}</button>`;
+            });
+            filtros.innerHTML = htmlFiltros;
 
-        // Monta o grid de produtos idêntico ao step-2 da nova comanda,
-        // mas com as quantidades já preenchidas conforme o que está salvo
-        let htmlGrid = '';
-        produtos.forEach(p => {
-            const qtdAtual = qtdSalva[p.id] || 0;
-            htmlGrid += `
+            let htmlGrid = '';
+            produtos.forEach(p => {
+                const qtdAtual = qtdSalva[p.id] || 0;
+                htmlGrid += `
                 <div class="card-produto-sel" data-categoria="${p.categoria ?? ''}">
                     <img src="${p.imagem ?? ''}" alt="Produto">
                     <p class="nome-produto">${p.nome}</p>
@@ -516,18 +474,18 @@ window.abrirModalEdicao = function(id) {
                         <button type="button" class="btn-qtd" onclick="ajustarQtd('edit-${p.id}', 1)">+</button>
                     </div>
                 </div>`;
-        });
-        grid.innerHTML = htmlGrid;
+            });
+            grid.innerHTML = htmlGrid;
 
-        modal.style.display = 'flex';
-    })
-    .catch(err => {
-        console.error('Erro ao carregar modal de edição:', err);
-        grid.innerHTML = '<p style="color:red;">Erro ao carregar produtos.</p>';
-    });
+            modal.style.display = 'flex';
+        })
+        .catch(err => {
+            console.error('Erro ao carregar modal de edição:', err);
+            grid.innerHTML = '<p style="color:red;">Erro ao carregar produtos.</p>';
+        });
 };
 
-// Filtro de categoria dentro do modal de edição
+// FILTRO DE CATEGORIAS DENTRO DO MODAL DE EDIÇÃO
 function filtrarProdutosEdicao(categoria) {
     const modal = document.getElementById('modal-editar-itens');
     if (!modal) return;
@@ -546,15 +504,12 @@ function filtrarProdutosEdicao(categoria) {
     });
 }
 
-window.fecharModalEdicao = function() {
+window.fecharModalEdicao = function () {
     const modal = document.getElementById('modal-editar-itens');
     if (modal) modal.style.display = 'none';
 };
 
-
-// ==========================================
-// MODAL: ADICIONAR ITENS (função reservada)
-// ==========================================
+// MODAL ADICIONAR ITENS
 window.abrirSelecaoAdicao = function () {
     const modal = document.getElementById('modal-adicionar-itens');
     if (modal) modal.style.display = 'flex';
