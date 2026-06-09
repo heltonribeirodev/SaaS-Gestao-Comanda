@@ -519,3 +519,61 @@ window.fecharAdicao = function () {
     const modal = document.getElementById('modal-adicionar-itens');
     if (modal) modal.style.display = 'none';
 };
+
+
+
+
+// ==========================================
+// PAINEL ADMINISTRATIVO — admin.js
+// ==========================================
+
+let usuarioIdParaExcluir = null;
+
+// Abre o modal para criar um novo usuário
+function abrirModalNovoUsuario() {
+    document.getElementById('modal-usuario-titulo').innerText = 'Novo Usuário';
+    document.getElementById('usuario-id').value       = '';
+    document.getElementById('usuario-nome').value     = '';
+    document.getElementById('usuario-email').value    = '';
+    document.getElementById('usuario-senha').value    = '';
+    document.getElementById('usuario-perfil').value   = 'atendente';
+    document.getElementById('usuario-status').value   = 'ativo';
+    document.getElementById('label-senha-hint').style.display = 'none';
+    document.getElementById('modal-usuario').style.display    = 'flex';
+}
+
+// Abre o modal pré-preenchido para editar um usuário existente
+function abrirModalEditarUsuario(id, nome, email, perfil, status) {
+    document.getElementById('modal-usuario-titulo').innerText = 'Editar Usuário';
+    document.getElementById('usuario-id').value       = id;
+    document.getElementById('usuario-nome').value     = nome;
+    document.getElementById('usuario-email').value    = email;
+    document.getElementById('usuario-senha').value    = '';
+    document.getElementById('usuario-perfil').value   = perfil  || 'atendente';
+    document.getElementById('usuario-status').value   = status  || 'ativo';
+    document.getElementById('label-senha-hint').style.display = 'inline';
+    document.getElementById('modal-usuario').style.display    = 'flex';
+}
+
+// Fecha o modal de criar/editar usuário
+function fecharModalUsuario() {
+    document.getElementById('modal-usuario').style.display = 'none';
+}
+
+// Abre o modal de confirmação de exclusão
+function confirmarExclusaoUsuario(id, nome) {
+    usuarioIdParaExcluir = id;
+    document.getElementById('nome-usuario-excluir').innerText = nome;
+    document.getElementById('modal-confirmar-exclusao-usuario').style.display = 'flex';
+}
+
+// Fecha o modal de confirmação de exclusão
+function fecharModalConfirmarExclusao() {
+    document.getElementById('modal-confirmar-exclusao-usuario').style.display = 'none';
+}
+
+// Executa a exclusão redirecionando para a API
+function executarExclusaoUsuario() {
+    if (!usuarioIdParaExcluir) return;
+    window.location.href = 'api/excluir_usuario.php?id=' + usuarioIdParaExcluir;
+}

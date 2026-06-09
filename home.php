@@ -139,7 +139,7 @@ foreach ($resultados as $res) {
                 </div>
 
                 <div id="step-2" style="display: none;" class="new-comanda">
-                    <h2>Nova Comanda (2/2)</h2>
+                    <h2>Nova Comanda (2/2)</h2> 
                     <div class="status-filtros" style="margin-bottom: 10px;">
                         <button type="button" class="btn-filtro-modal active"
                             onclick="filtrarProdutos('todos')">Todos</button>
