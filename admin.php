@@ -105,7 +105,7 @@ $sqlRecentes = "
     WHERE 1=1 $whereDatas
     GROUP BY c.id
     ORDER BY c.data_criacao DESC
-    LIMIT 7
+    LIMIT 8
 ";
 $stmtRecentes = $pdo->prepare($sqlRecentes);
 $stmtRecentes->execute($paramsDatas);
@@ -312,8 +312,7 @@ $feedback    = $mensagens[$feedbackKey] ?? null;
     <div class="admin-section" style="margin-top: 28px;">
         <div class="admin-section__header">
             <h3 class="admin-section__title">👤 Usuários do Sistema</h3>
-            <button class="btn-secundario" onclick="abrirModalNovoUsuario()"
-                style="font-size:0.85rem; height:36px; width:auto; padding: 0 16px;">
+            <button class="btn-secundario btn-new-user" onclick="abrirModalNovoUsuario()">
                 + Novo Usuário
             </button>
         </div>
