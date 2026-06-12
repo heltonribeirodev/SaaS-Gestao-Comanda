@@ -279,7 +279,7 @@ function fecharConfirmacao() {
 }
 
 function editarProduto(id) {
-    fetch(`api/get_produto.php?id=${id}`)
+    fetch(`api/get_produtos.php?id=${id}`)
         .then(res => res.json())
         .then(data => {
             const modal = document.getElementById('modal-novo-produto');
