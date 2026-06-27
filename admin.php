@@ -3,7 +3,7 @@ session_start();
 require_once 'api/conexao.php';
 
 if (!isset($_SESSION['usuario_id'])) {
-    header("Location: index.html");
+    header("Location: index.php");
     exit;
 }
 
@@ -145,11 +145,17 @@ $feedback    = $mensagens[$feedbackKey] ?? null;
 
 <header class="nav">
     <img src="assets/logo.png" alt="Logo" class="logo-header">
-    <nav>
+
+    <button class="btn-hamburguer" aria-label="Abrir menu" onclick="toggleMenu()">
+        <span></span><span></span><span></span>
+    </button>
+
+    <nav id="nav-menu">
         <ul>
             <li><a href="home.php">Comandas</a></li>
             <li><a href="produtos.php">Produtos</a></li>
             <li><a href="admin.php" class="select-nav">Painel Administrativo</a></li>
+            <li><a href="logout.php" class="nav-sair">Sair</a></li>
         </ul>
     </nav>
 </header>
@@ -272,6 +278,7 @@ $feedback    = $mensagens[$feedbackKey] ?? null;
 
         <div class="admin-section">
             <h3 class="admin-section__title">🕐 Últimas Comandas</h3>
+            <div class="admin-table-wrapper">
             <table class="admin-table">
                 <thead>
                     <tr>
@@ -285,17 +292,17 @@ $feedback    = $mensagens[$feedbackKey] ?? null;
                 <tbody>
                     <?php foreach ($recentesComandas as $c): ?>
                         <tr>
-                            <td><strong><?= $c['id'] ?></strong></td>
-                            <td><?= htmlspecialchars($c['cliente'] ?: 'Não informado') ?></td>
-                            <td>
+                            <td data-label="#"><?= $c['id'] ?></td>
+                            <td data-label="Cliente"><?= htmlspecialchars($c['cliente'] ?: 'Não informado') ?></td>
+                            <td data-label="Status">
                                 <span class="badge-status badge-status--<?= $c['status'] ?>">
                                     <?= ucfirst($c['status']) ?>
                                 </span>
                             </td>
-                            <td style="white-space:nowrap; color:#6b7280; font-size:0.85rem;">
+                            <td data-label="Data" style="white-space:nowrap; color:#6b7280; font-size:0.85rem;">
                                 <?= date('d/m/Y', strtotime($c['data_criacao'])) ?>
                             </td>
-                            <td><strong>R$ <?= number_format($c['valor_total'], 2, ',', '.') ?></strong></td>
+                            <td data-label="Total"><strong>R$ <?= number_format($c['valor_total'], 2, ',', '.') ?></strong></td>
                         </tr>
                     <?php endforeach; ?>
                     <?php if (empty($recentesComandas)): ?>
@@ -303,6 +310,7 @@ $feedback    = $mensagens[$feedbackKey] ?? null;
                     <?php endif; ?>
                 </tbody>
             </table>
+            </div>
             <a href="home.php" class="admin-link-ver-todas">Ver todas as comandas →</a>
         </div>
 
@@ -317,6 +325,7 @@ $feedback    = $mensagens[$feedbackKey] ?? null;
             </button>
         </div>
 
+        <div class="admin-table-wrapper">
         <table class="admin-table">
             <thead>
                 <tr>
@@ -332,23 +341,23 @@ $feedback    = $mensagens[$feedbackKey] ?? null;
             <tbody>
                 <?php foreach ($usuarios as $u): ?>
                     <tr>
-                        <td><?= $u['id'] ?></td>
-                        <td><?= htmlspecialchars($u['nome']) ?></td>
-                        <td><?= htmlspecialchars($u['email']) ?></td>
-                        <td>
+                        <td data-label="#"><?= $u['id'] ?></td>
+                        <td data-label="Nome"><?= htmlspecialchars($u['nome']) ?></td>
+                        <td data-label="E-mail"><?= htmlspecialchars($u['email']) ?></td>
+                        <td data-label="Perfil">
                             <span class="badge-status <?= $u['tipo_perfil'] === 'admin' ? 'badge-status--aberta' : 'badge-status--usuario' ?>">
                                 <?= ucfirst(htmlspecialchars($u['tipo_perfil'])) ?>
                             </span>
                         </td>
-                        <td>
+                        <td data-label="Status">
                             <span class="badge-status <?= $u['status_conta'] === 'ativo' ? 'badge-status--aberta' : 'badge-status--fiado' ?>">
                                 <?= ucfirst(htmlspecialchars($u['status_conta'])) ?>
                             </span>
                         </td>
-                        <td style="white-space:nowrap; color:#6b7280; font-size:0.85rem;">
+                        <td data-label="Cadastrado em" style="white-space:nowrap; color:#6b7280; font-size:0.85rem;">
                             <?= date('d/m/Y H:i', strtotime($u['criado_em'])) ?>
                         </td>
-                        <td>
+                        <td data-label="Ações">
                             <button class="btn-acao-tabela btn-acao-tabela--editar"
                                 onclick="abrirModalEditarUsuario(
                                     <?= $u['id'] ?>,
@@ -369,6 +378,7 @@ $feedback    = $mensagens[$feedbackKey] ?? null;
                 <?php endif; ?>
             </tbody>
         </table>
+        </div>
     </div>
 
 </main>

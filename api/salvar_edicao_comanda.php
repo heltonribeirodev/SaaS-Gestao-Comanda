@@ -9,49 +9,70 @@ if (!$comanda_id) {
     exit;
 }
 
-// Busca o valor unitário de cada produto no banco para garantir
-// que o preço salvo é sempre o preço atual do produto,
-// e não um valor que poderia vir manipulado pelo cliente.
-$stmtProdutos = $pdo->query("SELECT id, valor FROM produtos");
-$precos = [];
-foreach ($stmtProdutos->fetchAll(PDO::FETCH_ASSOC) as $p) {
-    $precos[$p['id']] = $p['valor'];
-}
-
-// Inicia uma transação para garantir que ou tudo salva, ou nada salva.
-// Isso evita que a comanda fique em estado inconsistente se ocorrer
-// um erro no meio do processo.
 $pdo->beginTransaction();
 
 try {
-    // Estratégia: apaga todos os itens atuais da comanda e
-    // reinsere apenas os que têm quantidade > 0.
-    // Mais simples do que comparar item por item.
-    $stmtDel = $pdo->prepare("DELETE FROM itens_comanda WHERE comanda_id = ?");
-    $stmtDel->execute([$comanda_id]);
+    // 1. Busca os itens que JÁ ESTÃO na comanda para comparação
+    $stmtAtuais = $pdo->prepare("SELECT id, produto_id, quantidade, valor_unitario FROM itens_comanda WHERE comanda_id = ?");
+    $stmtAtuais->execute([$comanda_id]);
+    
+    $itensExistentes = [];
+    foreach ($stmtAtuais->fetchAll(PDO::FETCH_ASSOC) as $item) {
+        $itensExistentes[$item['produto_id']] = $item;
+    }
 
-    // Prepara o INSERT uma vez e reutiliza dentro do loop (mais eficiente)
-    $stmtIns = $pdo->prepare("
-        INSERT INTO itens_comanda (comanda_id, produto_id, quantidade, valor_unitario)
-        VALUES (?, ?, ?, ?)
-    ");
+    // 2. Busca os preços atuais dos produtos (apenas para NOVAS inserções)
+    $stmtProdutos = $pdo->query("SELECT id, valor FROM produtos");
+    $precosAtuais = [];
+    foreach ($stmtProdutos->fetchAll(PDO::FETCH_ASSOC) as $p) {
+        $precosAtuais[$p['id']] = $p['valor'];
+    }
 
-    // Percorre todos os campos do POST procurando os que começam com "qtd-"
+    // Prepara os statements fora do loop para otimização de performance
+    $stmtUpdate = $pdo->prepare("UPDATE itens_comanda SET quantidade = ? WHERE id = ?");
+    $stmtInsert = $pdo->prepare("INSERT INTO itens_comanda (comanda_id, produto_id, quantidade, valor_unitario) VALUES (?, ?, ?, ?)");
+    $stmtDelete = $pdo->prepare("DELETE FROM itens_comanda WHERE id = ?");
+
+    // 3. Processa os dados enviados via POST
+    $produtosProcessados = []; // Mantém rastro do que veio no POST
+
     foreach ($_POST as $campo => $valor) {
         if (strpos($campo, 'qtd-') === 0) {
             $produto_id = (int) str_replace('qtd-', '', $campo);
             $quantidade = (int) $valor;
+            $produtosProcessados[] = $produto_id;
 
-            // Só insere se a quantidade for maior que zero
-            // e se o produto realmente existir no banco (segurança extra)
-            if ($quantidade > 0 && isset($precos[$produto_id])) {
-                $stmtIns->execute([
-                    $comanda_id,
-                    $produto_id,
-                    $quantidade,
-                    $precos[$produto_id] // preço sempre vem do banco, nunca do POST
-                ]);
+            if (isset($itensExistentes[$produto_id])) {
+                // O item já existe na comanda
+                $idItemComanda = $itensExistentes[$produto_id]['id'];
+                
+                if ($quantidade > 0) {
+                    // Se a quantidade mudou, faz o UPDATE. A data e o preço original são mantidos intactos.
+                    if ($quantidade !== (int)$itensExistentes[$produto_id]['quantidade']) {
+                        $stmtUpdate->execute([$quantidade, $idItemComanda]);
+                    }
+                } else {
+                    // Se a quantidade veio zerada, remove o item
+                    $stmtDelete->execute([$idItemComanda]);
+                }
+            } else {
+                // O item NÃO existe na comanda e foi adicionado agora
+                if ($quantidade > 0 && isset($precosAtuais[$produto_id])) {
+                    $stmtInsert->execute([
+                        $comanda_id,
+                        $produto_id,
+                        $quantidade,
+                        $precosAtuais[$produto_id]
+                    ]);
+                }
             }
+        }
+    }
+
+    // 4. (Opcional) Limpeza de itens que estavam no banco, mas sequer vieram no POST
+    foreach ($itensExistentes as $prod_id => $dadosItem) {
+        if (!in_array($prod_id, $produtosProcessados)) {
+            $stmtDelete->execute([$dadosItem['id']]);
         }
     }
 
@@ -59,8 +80,8 @@ try {
     header('Location: ../home.php?status=sucesso');
 
 } catch (Exception $e) {
-    // Se qualquer coisa falhar, desfaz tudo para não corromper os dados
     $pdo->rollBack();
+    error_log("Erro ao salvar comanda: " . $e->getMessage()); // Prática recomendada para debug em produção
     header('Location: ../home.php?status=erro');
 }
 exit;

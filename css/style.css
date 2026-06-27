@@ -1538,3 +1538,422 @@ body.home {
         scale: 1.02;
     }
 }
+
+/* ==========================================
+   BOTÃO HAMBÚRGUER + LINK SAIR
+   ========================================== */
+
+.btn-hamburguer {
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    gap: 5px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px 6px;
+    border-radius: 6px;
+    transition: background 0.2s;
+}
+
+.btn-hamburguer:hover {
+    background: #f0f0f0;
+}
+
+.btn-hamburguer span {
+    display: block;
+    width: 22px;
+    height: 2px;
+    background-color: #374151;
+    border-radius: 2px;
+    transition: all 0.3s ease;
+}
+
+.btn-hamburguer.aberto span:nth-child(1) {
+    transform: translateY(7px) rotate(45deg);
+}
+.btn-hamburguer.aberto span:nth-child(2) {
+    opacity: 0;
+}
+.btn-hamburguer.aberto span:nth-child(3) {
+    transform: translateY(-7px) rotate(-45deg);
+}
+
+.nav-sair {
+    color: #ef4444 !important;
+    font-weight: 600 !important;
+}
+
+.nav-sair:hover {
+    color: #dc2626 !important;
+    text-shadow: none !important;
+}
+
+/* ==========================================
+   RESPONSIVIDADE — TABLET (até 1024px)
+   ========================================== */
+
+@media (max-width: 1024px) {
+    .nav {
+        padding: 1rem 2rem;
+    }
+
+    .conteudo {
+        padding: 1.5rem 2rem;
+        margin: 1.5rem 2rem;
+    }
+
+    .admin-conteudo {
+        padding: 1.5rem 2rem;
+        margin: 1.5rem 2rem;
+    }
+}
+
+/* ==========================================
+   RESPONSIVIDADE — MOBILE (até 768px)
+   ========================================== */
+
+@media (max-width: 768px) {
+
+    /* NAV */
+    .nav {
+        padding: 0.875rem 1.25rem;
+        position: relative;
+        flex-wrap: wrap;
+    }
+
+    .btn-hamburguer {
+        display: flex;
+    }
+
+    /* Menu fechado por padrão no mobile */
+    .nav nav#nav-menu {
+        display: none;
+        width: 100%;
+        order: 3;
+    }
+
+    /* Menu aberto */
+    .nav nav#nav-menu.aberto {
+        display: block;
+        background: #fff;
+        border-top: 1px solid #f0f0f0;
+        padding: 0.75rem 0;
+        border-radius: 0 0 12px 12px;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+    }
+
+    .nav nav#nav-menu.aberto ul {
+        flex-direction: column;
+        gap: 0;
+    }
+
+    .nav nav#nav-menu.aberto ul li a {
+        display: block;
+        padding: 0.7rem 1rem;
+        border-radius: 8px;
+        margin: 2px 4px;
+    }
+
+    .nav nav#nav-menu.aberto ul li a:hover {
+        background: #f4f5f7;
+    }
+
+    /* CONTEÚDO */
+    .conteudo {
+        padding: 1.25rem 1rem;
+        margin: 0.75rem;
+    }
+
+    .admin-conteudo {
+        padding: 1.25rem 1rem;
+        margin: 0.75rem;
+    }
+
+    /* TÍTULO + GRUPO DE AÇÕES */
+    .conteudo .title {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.75rem;
+    }
+
+    .conteudo .title .grupo-acoes {
+        flex-direction: column;
+        width: 100%;
+        gap: 0.5rem;
+    }
+
+    .conteudo .title .grupo-acoes .search-container {
+        width: 100%;
+    }
+
+    .conteudo .title .grupo-acoes .search-container input {
+        width: 100%;
+        min-width: 0;
+    }
+
+    .btn-secundario,
+    .btn-new-user {
+        width: 100% !important;
+        justify-content: center;
+        box-sizing: border-box;
+    }
+
+    /* GRID COMANDAS */
+    .container-comandas {
+        grid-template-columns: 1fr;
+    }
+
+    /* GRID PRODUTOS */
+    .grid-produtos {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+    }
+
+    /* MODAIS */
+    .modal-content {
+        width: 95vw !important;
+        max-width: 95vw !important;
+        border-radius: 12px !important;
+        padding: 1.5rem 1.25rem !important;
+        max-height: 90vh;
+        overflow-y: auto;
+    }
+
+    /* Modais maiores (nova comanda / editar itens) */
+    #modal-comanda .modal-content,
+    #modal-editar-itens .modal-content {
+        width: 95vw;
+        max-width: 95vw;
+        border-radius: 12px;
+        padding: 1.25rem 1rem;
+        max-height: 90vh;
+    }
+
+    .modal-actions {
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .modal-actions button,
+    .modal-actions .btn-acao,
+    .modal-actions .btn-cancelar {
+        flex: 1;
+        min-width: 100px;
+        text-align: center;
+        justify-content: center;
+    }
+
+    /* Grid produtos dentro dos modais */
+    .grid-produtos-comanda {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+    }
+
+    /* Botões de pagamento */
+    .btn-pagar {
+        flex: 1 1 calc(50% - 8px);
+    }
+
+    #menu-pagamento .modal-actions {
+        flex-wrap: wrap;
+    }
+
+    /* PAINEL ADMIN */
+    .admin-cards {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+    }
+
+    .admin-row {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+
+    .admin-filtro-datas {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+
+    .admin-filtro-datas input[type="date"] {
+        width: 100%;
+    }
+
+    .btn-filtro-data {
+        width: 100%;
+        text-align: center;
+    }
+}
+
+/* ==========================================
+   RESPONSIVIDADE — MOBILE PEQUENO (até 480px)
+   ========================================== */
+
+@media (max-width: 480px) {
+
+    .grid-produtos {
+        grid-template-columns: 1fr;
+    }
+
+    .grid-produtos-comanda {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+    }
+
+    .admin-cards {
+        grid-template-columns: 1fr;
+    }
+
+    .admin-table th,
+    .admin-table td {
+        padding: 8px 6px;
+        font-size: 0.8rem;
+    }
+
+    .cartao-comanda {
+        padding: 1rem;
+    }
+
+    /* Login responsivo */
+    .container-login {
+        padding: 2rem 1.25rem;
+        margin: 0 0.75rem;
+        border-radius: 12px;
+    }
+}
+
+/* ==========================================
+   FIX ROLAGEM LATERAL — TABELAS MOBILE
+   ========================================== */
+
+/* Wrapper para tabelas com scroll horizontal controlado */
+.admin-table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    border-radius: 8px;
+}
+
+@media (max-width: 768px) {
+    /* Conteúdo principal não vaza */
+    .conteudo,
+    .admin-conteudo {
+        max-width: 100%;
+        box-sizing: border-box;
+    }
+
+    /* ---- TABELAS VIRAM CARDS NO MOBILE ---- */
+    .admin-table-wrapper {
+        overflow: visible;
+    }
+
+    .admin-table thead {
+        display: none; /* esconde o cabeçalho */
+    }
+
+    .admin-table,
+    .admin-table tbody,
+    .admin-table tr,
+    .admin-table td {
+        display: block;
+        width: 100%;
+    }
+
+    .admin-table tr {
+        background: #f9fafb;
+        border-radius: 10px;
+        margin-bottom: 10px;
+        padding: 12px 14px;
+        border: 1px solid #f0f0f0;
+        position: relative;
+    }
+
+    .admin-table tbody tr:hover td {
+        background: transparent;
+    }
+
+    .admin-table td {
+        border-bottom: none;
+        padding: 3px 0;
+        font-size: 0.875rem;
+        color: #374151;
+    }
+
+    /* Rótulo automático via data-label */
+    .admin-table td::before {
+        content: attr(data-label);
+        font-size: 0.7rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+        color: #9ca3af;
+        display: block;
+        margin-bottom: 1px;
+    }
+
+    /* Oculta células vazias ou de ID no mobile */
+    .admin-table td:first-child {
+        position: absolute;
+        top: 12px;
+        right: 14px;
+        font-size: 0.75rem;
+        color: #9ca3af;
+        padding: 0;
+    }
+
+    .admin-table td:first-child::before {
+        display: none;
+    }
+
+    /* Cards de admin */
+    .admin-cards {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    /* Filtro de datas empilhado */
+    .admin-filtro-datas {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .admin-filtro-datas label {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
+    }
+
+    .admin-filtro-datas input[type="date"] {
+        width: 100%;
+    }
+
+    .btn-filtro-data,
+    .btn-limpar-filtro {
+        width: 100%;
+        text-align: center;
+        display: block;
+    }
+
+    /* Seção de usuários — cabeçalho empilha */
+    .admin-section__header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .btn-new-user {
+        width: 100% !important;
+        justify-content: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .admin-cards {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Garante que admin-section não corte o scroll da tabela interna */
+.admin-section {
+    overflow: visible;
+}

@@ -6,10 +6,11 @@ $id = $_GET['id'] ?? 0;
 
 $stmt = $pdo->prepare("
     SELECT 
+        i.id AS id_linha,        -- ESTA É A LINHA QUE FALTAVA!
         i.produto_id, 
         i.quantidade, 
-        i.valor_unitario,         -- campo que estava faltando
-        i.data_criacao,           -- campo que estava faltando
+        i.valor_unitario,         
+        i.data_criacao,           
         p.nome AS nome_produto 
     FROM itens_comanda i
     JOIN produtos p ON i.produto_id = p.id

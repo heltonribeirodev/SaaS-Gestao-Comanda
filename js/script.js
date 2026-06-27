@@ -577,3 +577,27 @@ function executarExclusaoUsuario() {
     if (!usuarioIdParaExcluir) return;
     window.location.href = 'api/excluir_usuario.php?id=' + usuarioIdParaExcluir;
 }
+
+// ==========================================
+// MENU HAMBÚRGUER — MOBILE
+// ==========================================
+function toggleMenu() {
+    const nav = document.getElementById('nav-menu');
+    const btn = document.querySelector('.btn-hamburguer');
+    if (!nav || !btn) return;
+    nav.classList.toggle('aberto');
+    btn.classList.toggle('aberto');
+}
+
+// Fecha o menu ao clicar em qualquer link dentro dele
+document.addEventListener('DOMContentLoaded', () => {
+    const navLinks = document.querySelectorAll('#nav-menu a');
+    navLinks.forEach(link => {
+        link.addEventListener('click', () => {
+            const nav = document.getElementById('nav-menu');
+            const btn = document.querySelector('.btn-hamburguer');
+            if (nav) nav.classList.remove('aberto');
+            if (btn) btn.classList.remove('aberto');
+        });
+    });
+});

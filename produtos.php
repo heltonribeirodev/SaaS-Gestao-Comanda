@@ -1,7 +1,7 @@
 <?php
 session_start();
 if (!isset($_SESSION['usuario_id'])) {
-    header("Location: index.html");
+    header("Location: index.php");
     exit;
 }
 require_once 'api/conexao.php';
@@ -30,11 +30,18 @@ $totalGeral = array_sum(array_column($categoriasComCount, 'total'));
 <body class="home">
     <header class="nav">
         <img src="assets/logo.png" alt="Logo" class="logo-header">
-        <nav>
+
+        <!-- Botão hambúrguer (visível só no mobile via CSS) -->
+        <button class="btn-hamburguer" aria-label="Abrir menu" onclick="toggleMenu()">
+            <span></span><span></span><span></span>
+        </button>
+
+        <nav id="nav-menu">
             <ul>
                 <li><a href="home.php">Comandas</a></li>
                 <li><a href="produtos.php" class="select-nav">Produtos</a></li>
                 <li><a href="admin.php">Painel Administrativo</a></li>
+                <li><a href="logout.php" class="nav-sair">Sair</a></li>
             </ul>
         </nav>
     </header>
@@ -45,9 +52,9 @@ $totalGeral = array_sum(array_column($categoriasComCount, 'total'));
             <div class="grupo-acoes">
                 <div class="search-container">
                     <input type="text" id="buscar-produto" placeholder="Buscar produtos...">
-                    <button class="btn-pesquisar" aria-label="Pesquisar"></button>
+                    <button class="btn-pesquisar" aria-label="Pesquisar">🔍</button>
                 </div>
-                <a href="#" class="btn-secundario" onclick="abrirModalProduto()">+ Novo Produto</a>
+                <a href="#" class="btn-secundario" onclick="event.preventDefault(); abrirModalProduto()">+ Novo Produto</a>
             </div>
         </div>
 
@@ -75,10 +82,8 @@ $totalGeral = array_sum(array_column($categoriasComCount, 'total'));
                         onerror="this.src='/saas-gestao-comandas/assets/default.png';">
                     <p>R$ <?= number_format($p['valor'], 2, ',', '.') ?></p>
                     <div class="card-acoes">
-                        <div class="card-acoes">
-                            <button onclick="editarProduto(<?= $p['id'] ?>)" class="btn-sm">✏️</button>
-                            <button onclick="excluirProduto(<?= $p['id'] ?>)" class="btn-sm">🗑️</button>
-                        </div>
+                        <button onclick="editarProduto(<?= (int)$p['id'] ?>)" class="btn-sm">✏️</button>
+                        <button onclick="excluirProduto(<?= (int)$p['id'] ?>)" class="btn-sm">🗑️</button>
                     </div>
                 </div>
             <?php endforeach; ?>
@@ -101,7 +106,7 @@ $totalGeral = array_sum(array_column($categoriasComCount, 'total'));
                 <div class="modal-actions">
                     <button type="button" class="btn-cancelar" onclick="fecharModalProduto()">Cancelar</button>
                     <button type="submit" class="btn-acao">Salvar</button>
-                </div>  
+                </div>
             </form>
         </div>
     </div>
@@ -110,7 +115,7 @@ $totalGeral = array_sum(array_column($categoriasComCount, 'total'));
         <div class="modal-content">
             <p>Tem certeza que deseja excluir este produto?</p>
             <div class="modal-actions">
-                <button onclick="fecharConfirmacao()">Cancelar</button>
+                <button onclick="fecharConfirmacao()" class="btn-cancelar">Cancelar</button>
                 <button id="btn-confirmar-exclusao" class="btn-perigo">Confirmar</button>
             </div>
         </div>

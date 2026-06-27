@@ -3,7 +3,7 @@ session_start();
 require_once 'api/conexao.php';
 
 if (!isset($_SESSION['usuario_id'])) {
-    header("Location: index.html");
+    header("Location: index.php");
     exit;
 }
 
@@ -39,14 +39,13 @@ $stmtContagem = $pdo->query("
 ");
 $resultados = $stmtContagem->fetchAll(PDO::FETCH_ASSOC);
 
-// Inicializa o array com ZEROS (Corrigido para evitar avisos no PHP)
+// Inicializa o array com ZEROS
 $contagens = [
     'aberta' => 0,
     'fiado' => 0,
     'fechada' => 0
 ];
 
-// Preenche apenas se existir no banco
 foreach ($resultados as $res) {
     if (array_key_exists($res['status'], $contagens)) {
         $contagens[$res['status']] = $res['total'];
@@ -67,11 +66,18 @@ foreach ($resultados as $res) {
 <body class="home">
     <header class="nav">
         <img src="assets/logo.png" alt="Logo do SaaS Gestão de Comandas" class="logo-header">
-        <nav>
+
+        <!-- Botão hambúrguer (visível só no mobile via CSS) -->
+        <button class="btn-hamburguer" aria-label="Abrir menu" onclick="toggleMenu()">
+            <span></span><span></span><span></span>
+        </button>
+
+        <nav id="nav-menu">
             <ul>
                 <li><a href="home.php" class="select-nav">Comandas</a></li>
                 <li><a href="produtos.php">Produtos</a></li>
                 <li><a href="admin.php">Painel Administrativo</a></li>
+                <li><a href="logout.php" class="nav-sair">Sair</a></li>
             </ul>
         </nav>
     </header>
@@ -82,9 +88,9 @@ foreach ($resultados as $res) {
             <div class="grupo-acoes">
                 <div class="search-container">
                     <input type="text" id="buscar-comanda" placeholder="Buscar comandas...">
-                    <button class="btn-pesquisar" aria-label="Pesquisar"></button>
+                    <button class="btn-pesquisar" aria-label="Pesquisar">🔍</button>
                 </div>
-                <a href="#n-comanda" class="btn-nova-comanda btn-secundario">
+                <a href="#" class="btn-nova-comanda btn-secundario" onclick="event.preventDefault(); abrirModal();">
                     + Nova Comanda
                 </a>
             </div>
@@ -116,7 +122,7 @@ foreach ($resultados as $res) {
                             <?= number_format($c['valor_total'] ?? 0, 2, ',', '.') ?></span></p>
 
                     <button type="button" class="btn-editar"
-                        onclick="abrirAcoes(<?= $c['id'] ?>, '<?= addslashes(htmlspecialchars($c['cliente'])) ?>', '<?= $c['status'] ?>', '<?= $c['metodo_pagamento'] ?>')">
+                        onclick="abrirAcoes(<?= (int)$c['id'] ?>, '<?= addslashes(htmlspecialchars($c['cliente'] ?? '', ENT_QUOTES, 'UTF-8')) ?>', '<?= htmlspecialchars($c['status'] ?? '') ?>', '<?= htmlspecialchars($c['metodo_pagamento'] ?? '') ?>')">
                         Ações / Pagamento
                     </button>
                 </div>
@@ -139,13 +145,13 @@ foreach ($resultados as $res) {
                 </div>
 
                 <div id="step-2" style="display: none;" class="new-comanda">
-                    <h2>Nova Comanda (2/2)</h2> 
+                    <h2>Nova Comanda (2/2)</h2>
                     <div class="status-filtros" style="margin-bottom: 10px;">
                         <button type="button" class="btn-filtro-modal active"
                             onclick="filtrarProdutos('todos')">Todos</button>
                         <?php foreach ($categorias as $cat): ?>
                             <button type="button" class="btn-filtro-modal"
-                                onclick="filtrarProdutos('<?= htmlspecialchars($cat) ?>')">
+                                onclick="filtrarProdutos('<?= htmlspecialchars($cat, ENT_QUOTES) ?>')">
                                 <?= htmlspecialchars($cat) ?>
                             </button>
                         <?php endforeach; ?>
@@ -185,7 +191,7 @@ foreach ($resultados as $res) {
             <div id="visualizacao-conta">
                 <div id="lista-itens-edit"></div>
                 <div class="modal-actions">
-                    <button id="btn-editar-produtos" class="btn-acao""
+                    <button id="btn-editar-produtos" class="btn-acao"
                         onclick="abrirModalEdicao(document.getElementById('num-comanda').innerText)">
                         Editar / Adicionar Produtos
                     </button>
@@ -230,12 +236,10 @@ foreach ($resultados as $res) {
             <form id="form-editar-itens" action="api/salvar_edicao_comanda.php" method="POST">
                 <input type="hidden" name="comanda_id" id="edit-comanda-id">
 
-                <!-- Filtros de categoria, igual ao step-2 da nova comanda -->
                 <div id="filtros-edicao" class="status-filtros" style="margin-bottom: 10px;">
                     <!-- Preenchido dinamicamente pelo JS -->
                 </div>
 
-                <!-- Grid de produtos, igual ao step-2 -->
                 <div id="grid-itens-edicao" class="grid-produtos-comanda">
                     <!-- Preenchido dinamicamente pelo JS -->
                 </div>
@@ -247,7 +251,6 @@ foreach ($resultados as $res) {
             </form>
         </div>
     </div>
-
 
     <script src="js/script.js" defer></script>
 </body>
