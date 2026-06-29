@@ -169,6 +169,16 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
+
+    // Fecha o menu hambúrguer ao clicar em qualquer link do nav
+    document.querySelectorAll('#nav-menu a').forEach(link => {
+        link.addEventListener('click', () => {
+            const nav = document.getElementById('nav-menu');
+            const btn = document.querySelector('.btn-hamburguer');
+            if (nav) nav.classList.remove('aberto');
+            if (btn) btn.classList.remove('aberto');
+        });
+    });
 });
 
 // MODAL NOVA COMANDA
@@ -345,28 +355,48 @@ function abrirAcoes(id, cliente, status, metodoPagamento = '') {
         }
     });
 
-    fetch('api/get_comanda.php?id=' + id) // TABELA DE PRODUTO AO VISUALIZAR A COMANDA
+    fetch('api/get_comanda.php?id=' + id) // CARDS DE PRODUTOS AO VISUALIZAR A COMANDA
         .then(res => res.json())
         .then(data => {
-            let html = '<table style="width:100%; border-collapse: collapse;">';
-            html += '<tr><th>Data</th><th>Produto</th><th>Qtd</th><th>Valor</th><th>Total</th></tr>';
+            let totalGeral = 0;
+            let html = '<div class="itens-comanda-lista">';
 
-            data.itens.forEach(item => {
-                let dataFormatada = '—';
-                if (item.data_criacao) {
-                    let dataObj = new Date(item.data_criacao.replace(' ', 'T'));
-                    dataFormatada = dataObj.toLocaleDateString('pt-BR');
-                }
+            if (!data.itens || data.itens.length === 0) {
+                html += '<p style="text-align:center; color:#aaa; padding: 16px 0;">Nenhum item nesta comanda.</p>';
+            } else {
+                data.itens.forEach(item => {
+                    // data_adicao vem do alias definido no get_comanda.php
+                    let dataFormatada = '—';
+                    const dataRaw = item.data_adicao || item.data_criacao || null;
+                    if (dataRaw) {
+                        dataFormatada = new Date(dataRaw.replace(' ', 'T')).toLocaleDateString('pt-BR');
+                    }
 
-                html += `<tr style="text-align:center;">
-                    <td>${dataFormatada}</td>
-                    <td>${item.nome_produto ?? 'Sem nome'}</td>
-                    <td>${item.quantidade ?? 0}</td>
-                    <td>${item.valor_unitario ?? '0.00'}</td>
-                    <td>R$ ${parseFloat((item.quantidade ?? 0) * (item.valor_unitario ?? 0)).toFixed(2)}</td>
-                </tr>`;
-            });
-            html += '</table>';
+                    const qtd   = item.quantidade ?? 0;
+                    const valor = parseFloat(item.valor_unitario ?? 0);
+                    const total = qtd * valor;
+                    totalGeral += total;
+
+                    html += `
+                    <div class="item-comanda-card">
+                        <div class="item-comanda-info">
+                            <span class="item-comanda-nome">${item.nome_produto ?? 'Sem nome'}</span>
+                            <span class="item-comanda-data">${dataFormatada}</span>
+                        </div>
+                        <div class="item-comanda-valores">
+                            <span class="item-comanda-qtd">${qtd}x</span>
+                            <span class="item-comanda-preco">R$ ${valor.toFixed(2).replace('.', ',')}</span>
+                            <span class="item-comanda-total">R$ ${total.toFixed(2).replace('.', ',')}</span>
+                        </div>
+                    </div>`;
+                });
+            }
+
+            html += '</div>';
+            html += `<div class="item-comanda-total-geral">
+                        <span>Total</span>
+                        <strong>R$ ${totalGeral.toFixed(2).replace('.', ',')}</strong>
+                     </div>`;
 
             const lista = document.getElementById('lista-itens-edit');
             if (lista) lista.innerHTML = html;
@@ -446,9 +476,12 @@ window.abrirModalEdicao = function (id) {
             const produtos = dadosProdutos.produtos || [];
             const itens = dadosComanda.itens || [];
 
+            // Soma quantidades de todas as linhas do mesmo produto
+            // (um produto pode ter múltiplas linhas com datas diferentes)
             const qtdSalva = {};
             itens.forEach(item => {
-                qtdSalva[item.produto_id] = item.quantidade;
+                const pid = item.produto_id;
+                qtdSalva[pid] = (qtdSalva[pid] || 0) + (item.quantidade || 0);
             });
 
             const categorias = [...new Set(produtos.map(p => p.categoria).filter(Boolean))];
@@ -589,15 +622,4 @@ function toggleMenu() {
     btn.classList.toggle('aberto');
 }
 
-// Fecha o menu ao clicar em qualquer link dentro dele
-document.addEventListener('DOMContentLoaded', () => {
-    const navLinks = document.querySelectorAll('#nav-menu a');
-    navLinks.forEach(link => {
-        link.addEventListener('click', () => {
-            const nav = document.getElementById('nav-menu');
-            const btn = document.querySelector('.btn-hamburguer');
-            if (nav) nav.classList.remove('aberto');
-            if (btn) btn.classList.remove('aberto');
-        });
-    });
-});
+// Fecha o menu ao clicar em qualquer link — inicializado no DOMContentLoaded principal acima
